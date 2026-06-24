@@ -24,12 +24,6 @@ export function SkillsSection() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleScrollAttempt = (e: Event) => {
-      if (isDragging.current) {
-        e.preventDefault();
-      }
-    };
-
     // Native pointer handling in capture phase to reliably track OrbitControls drag state
     const handlePointerDown = () => { isDragging.current = true; };
     const handlePointerUp = () => { isDragging.current = false; };
@@ -47,8 +41,6 @@ export function SkillsSection() {
       }
     };
 
-    window.addEventListener('wheel', handleScrollAttempt, { passive: false });
-    window.addEventListener('touchmove', handleScrollAttempt, { passive: false });
     window.addEventListener('keydown', handleKeyDown, { passive: false });
 
     return () => {
@@ -57,8 +49,6 @@ export function SkillsSection() {
       }
       window.removeEventListener('pointerup', handlePointerUp, { capture: true });
       window.removeEventListener('pointercancel', handlePointerUp, { capture: true });
-      window.removeEventListener('wheel', handleScrollAttempt);
-      window.removeEventListener('touchmove', handleScrollAttempt);
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);

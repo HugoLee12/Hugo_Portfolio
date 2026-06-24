@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   motion,
   useMotionValue,
@@ -24,19 +24,49 @@ export function InnerDimensionGallery({
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     null,
   );
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isExiting, setIsExiting] = useState(false);
   const [scope, animate] = useAnimate();
+  const galleryMouseX = useMotionValue(0);
+  const galleryMouseY = useMotionValue(0);
+  const smoothGalleryMouseX = useSpring(galleryMouseX, {
+    stiffness: 100,
+    damping: 30,
+  });
+  const smoothGalleryMouseY = useSpring(galleryMouseY, {
+    stiffness: 100,
+    damping: 30,
+  });
+  const galleryRotateX = useTransform(smoothGalleryMouseY, (value) => value * -3);
+  const galleryRotateY = useTransform(smoothGalleryMouseX, (value) => value * 3);
+  const latestMouseRef = useRef({ x: 0, y: 0 });
+  const mouseRafRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const nx = (e.clientX / window.innerWidth) * 2 - 1;
-      const ny = (e.clientY / window.innerHeight) * 2 - 1;
-      setMousePos({ x: nx, y: ny });
+    const flushMousePosition = () => {
+      mouseRafRef.current = null;
+      galleryMouseX.set(latestMouseRef.current.x);
+      galleryMouseY.set(latestMouseRef.current.y);
     };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+
+    const handleMouseMove = (e: MouseEvent) => {
+      latestMouseRef.current = {
+        x: (e.clientX / window.innerWidth) * 2 - 1,
+        y: (e.clientY / window.innerHeight) * 2 - 1,
+      };
+
+      if (mouseRafRef.current === null) {
+        mouseRafRef.current = window.requestAnimationFrame(flushMousePosition);
+      }
+    };
+
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (mouseRafRef.current !== null) {
+        window.cancelAnimationFrame(mouseRafRef.current);
+      }
+    };
+  }, [galleryMouseX, galleryMouseY]);
 
   const handleReturn = async () => {
     if (isExiting) return;
@@ -252,13 +282,15 @@ export function InnerDimensionGallery({
           <motion.div
             className="relative z-10 w-full min-h-[380vh] overflow-visible mx-auto mt-10 pointer-events-none [perspective:2000px]"
             animate={{
-              rotateX: mousePos.y * -3,
-              rotateY: mousePos.x * 3,
               scale: selectedProjectId ? 0.95 : 1,
               opacity: selectedProjectId ? 0.5 : 1,
             }}
             transition={{ type: "spring", stiffness: 100, damping: 30 }}
-            style={{ transformStyle: "preserve-3d" }}
+            style={{
+              transformStyle: "preserve-3d",
+              rotateX: galleryRotateX,
+              rotateY: galleryRotateY,
+            }}
           >
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[2px] h-[350vh] bg-gradient-to-b from-white/40 via-cyan-400/10 to-transparent blur-sm pointer-events-none" />
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[15px] h-[350vh] bg-gradient-to-b from-white/10 via-purple-500/5 to-transparent blur-xl mix-blend-screen pointer-events-none" />

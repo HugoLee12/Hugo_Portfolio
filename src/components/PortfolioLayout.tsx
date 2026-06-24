@@ -42,10 +42,16 @@ export function PortfolioLayout({
 }: PortfolioLayoutProps) {
   const { scrollY } = useScroll();
   const [isScrolled, setIsScrolled] = React.useState(false);
+  const isScrolledRef = React.useRef(false);
   const shouldRenderShellCanvases = !isUniverseActive;
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    setIsScrolled(latest > 50);
+    const nextIsScrolled = latest > 50;
+    if (isScrolledRef.current === nextIsScrolled) {
+      return;
+    }
+    isScrolledRef.current = nextIsScrolled;
+    setIsScrolled(nextIsScrolled);
   });
 
   return (
