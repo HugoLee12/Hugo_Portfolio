@@ -1,19 +1,19 @@
 
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef, useMemo, useCallback, useEffect } from "react";
-import * as THREE from "three";
+import { AdditiveBlending, BufferGeometry, Color, DoubleSide, Group, LineLoop, MathUtils, Mesh, MeshBasicMaterial, ShaderMaterial, SphereGeometry, Vector3 } from 'three';
 import { Html, Text, Billboard } from "@react-three/drei";
 import { Project } from "../data";
 import { audioManager } from "../lib/audio";
 import { useAppStore } from "../store";
 
-const tempCenterLocal = new THREE.Vector3(0, 0, 0);
-const tempWPos = new THREE.Vector3();
-const tempVec = new THREE.Vector3();
-const redshiftColor = new THREE.Color(0xff3300);
-const emitRedshift = new THREE.Color(0xff2200);
-const tempTargetColor = new THREE.Color();
-const tempPColor = new THREE.Color();
+const tempCenterLocal = new Vector3(0, 0, 0);
+const tempWPos = new Vector3();
+const tempVec = new Vector3();
+const redshiftColor = new Color(0xff3300);
+const emitRedshift = new Color(0xff2200);
+const tempTargetColor = new Color();
+const tempPColor = new Color();
 
 import {
   planetVertexShader,
@@ -37,33 +37,33 @@ export function ProjectNode({
   isTransitioning?: boolean;
   onSelect: (id: string) => void;
 }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const materialRef = useRef<THREE.ShaderMaterial>(null);
-  const orbitRef = useRef<THREE.Group>(null);
-  const glowRef = useRef<THREE.Mesh>(null);
-  const nodeGroupRef = useRef<THREE.Group>(null);
-  const hudGroupRef = useRef<THREE.Group>(null);
+  const meshRef = useRef<Mesh>(null);
+  const materialRef = useRef<ShaderMaterial>(null);
+  const orbitRef = useRef<Group>(null);
+  const glowRef = useRef<Mesh>(null);
+  const nodeGroupRef = useRef<Group>(null);
+  const hudGroupRef = useRef<Group>(null);
 
   const orbitRotation = useRef(0);
   const targetEmissive = useRef(0.4);
 
-  const particleGroupRef = useRef<THREE.Group>(null);
-  const flashRef = useRef<THREE.Mesh>(null);
+  const particleGroupRef = useRef<Group>(null);
+  const flashRef = useRef<Mesh>(null);
   const lastParticleEmitTime = useRef(0);
   const particleIndex = useRef(0);
 
   const particles = useMemo(() => {
-    const meshes: THREE.Mesh[] = [];
+    const meshes: Mesh[] = [];
     for (let i = 0; i < 30; i++) {
-      const mat = new THREE.MeshBasicMaterial({
+      const mat = new MeshBasicMaterial({
         color: project.color,
         transparent: true,
         opacity: 0,
-        blending: THREE.AdditiveBlending,
+        blending: AdditiveBlending,
         depthWrite: false,
       });
-      const geo = new THREE.SphereGeometry(project.size * 0.4, 8, 8);
-      const mesh = new THREE.Mesh(geo, mat);
+      const geo = new SphereGeometry(project.size * 0.4, 8, 8);
+      const mesh = new Mesh(geo, mat);
       mesh.visible = false;
       meshes.push(mesh);
     }
@@ -74,7 +74,7 @@ export function ProjectNode({
   const uniforms = useMemo(
     () => ({
       uTime: { value: 0 },
-      uColor: { value: new THREE.Color(project.color) },
+      uColor: { value: new Color(project.color) },
       uEmissiveIntensity: { value: 0.4 },
       uHasRings: { value: hasRings ? 1.0 : 0.0 },
     }),
@@ -112,7 +112,7 @@ export function ProjectNode({
   const handlePointerOut = useCallback(
     (e: any) => {
       e.stopPropagation();
-      document.body.style.cursor = "auto";
+      document.body.style.cursor = "";
       useAppStore.getState().setHoveredId(null);
       if (!isSelected) {
         targetEmissive.current = 0.4;
@@ -128,19 +128,19 @@ export function ProjectNode({
     for (let i = 0; i <= 128; i++) {
       const theta = (i / 128) * Math.PI * 2;
       points.push(
-        new THREE.Vector3(
+        new Vector3(
           Math.cos(theta) * project.orbitRadius,
           0,
           Math.sin(theta) * project.orbitRadius,
         ),
       );
     }
-    const geom = new THREE.BufferGeometry().setFromPoints(points);
+    const geom = new BufferGeometry().setFromPoints(points);
 
-    const mat = new THREE.ShaderMaterial({
+    const mat = new ShaderMaterial({
       uniforms: {
-        color: { value: new THREE.Color("#1e293b") },
-        glowColor: { value: new THREE.Color(project.color) },
+        color: { value: new Color("#1e293b") },
+        glowColor: { value: new Color(project.color) },
         startAngle: { value: project.startAngle },
       },
       vertexShader: `
@@ -176,10 +176,10 @@ export function ProjectNode({
       `,
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: AdditiveBlending,
     });
 
-    const line = new THREE.LineLoop(geom, mat);
+    const line = new LineLoop(geom, mat);
     line.raycast = () => null;
     return line;
   }, [project.orbitRadius, project.color, project.startAngle]);
@@ -245,7 +245,7 @@ export function ProjectNode({
           if (elapsedTime - lastParticleEmitTime.current > 0.02) {
             lastParticleEmitTime.current = elapsedTime;
             const groupChildren = particleGroupRef.current.children;
-            const p = groupChildren[particleIndex.current] as THREE.Mesh;
+            const p = groupChildren[particleIndex.current] as Mesh;
             if (p) {
               p.visible = true;
 
@@ -253,14 +253,14 @@ export function ProjectNode({
               particleGroupRef.current.worldToLocal(tempWPos);
               p.position.copy(tempWPos);
 
-              (p.material as THREE.MeshBasicMaterial).opacity = 1.0;
+              (p.material as MeshBasicMaterial).opacity = 1.0;
               p.scale.set(1, 1, 1);
 
               tempPColor.set(project.color).lerp(
                 emitRedshift,
                 Math.pow(1.0 - normalizedD, 2.0),
               );
-              (p.material as THREE.MeshBasicMaterial).color.copy(tempPColor);
+              (p.material as MeshBasicMaterial).color.copy(tempPColor);
 
               particleIndex.current =
                 (particleIndex.current + 1) % groupChildren.length;
@@ -274,7 +274,7 @@ export function ProjectNode({
           if (flashRef.current) {
             flashRef.current.visible = true;
             flashRef.current.scale.set(0.1, 0.1, 0.1);
-            (flashRef.current.material as THREE.MeshBasicMaterial).opacity =
+            (flashRef.current.material as MeshBasicMaterial).opacity =
               1.0;
           }
         }
@@ -282,11 +282,11 @@ export function ProjectNode({
 
       if (particleGroupRef.current) {
         particleGroupRef.current.children.forEach((child) => {
-          const p = child as THREE.Mesh;
+          const p = child as Mesh;
           if (p.visible) {
-            (p.material as THREE.MeshBasicMaterial).opacity -= delta * 3.5;
+            (p.material as MeshBasicMaterial).opacity -= delta * 3.5;
             p.scale.multiplyScalar(1.0 - delta * 2.0);
-            if ((p.material as THREE.MeshBasicMaterial).opacity <= 0)
+            if ((p.material as MeshBasicMaterial).opacity <= 0)
               p.visible = false;
           }
         });
@@ -301,7 +301,7 @@ export function ProjectNode({
             s + expandSpeed,
             s + expandSpeed,
           );
-          (flashRef.current.material as THREE.MeshBasicMaterial).opacity =
+          (flashRef.current.material as MeshBasicMaterial).opacity =
             Math.max(0, 1.0 - s / 1.5);
         } else {
           flashRef.current.visible = false;
@@ -333,7 +333,7 @@ export function ProjectNode({
     if (materialRef.current) {
       const targetInt = isSelected ? 0.9 : targetEmissive.current;
       materialRef.current.uniforms.uEmissiveIntensity.value =
-        THREE.MathUtils.damp(
+        MathUtils.damp(
           materialRef.current.uniforms.uEmissiveIntensity.value,
           targetInt,
           8,
@@ -345,13 +345,13 @@ export function ProjectNode({
     const targetOp = isSelected ? 1.0 : targetHudOpacity.current;
     const targetSc = isSelected ? 1.1 : targetHudScale.current;
 
-    hudOpacity.current = THREE.MathUtils.damp(
+    hudOpacity.current = MathUtils.damp(
       hudOpacity.current,
       targetOp,
       8,
       delta,
     );
-    hudScale.current = THREE.MathUtils.damp(
+    hudScale.current = MathUtils.damp(
       hudScale.current,
       targetSc,
       8,
@@ -407,6 +407,8 @@ export function ProjectNode({
 
   useEffect(() => {
     return () => {
+      document.body.style.cursor = "";
+      useAppStore.getState().setHoveredId(null);
       particles.forEach((p) => {
         if (p.geometry) p.geometry.dispose();
         if (p.material) {
@@ -447,7 +449,7 @@ export function ProjectNode({
           <meshBasicMaterial
             color="#ffffff"
             transparent={true}
-            blending={THREE.AdditiveBlending}
+            blending={AdditiveBlending}
             depthWrite={false}
           />
         </mesh>
@@ -490,8 +492,8 @@ export function ProjectNode({
                 fragmentShader={ringFragmentShader}
                 transparent={true}
                 depthWrite={false}
-                side={THREE.DoubleSide}
-                blending={THREE.AdditiveBlending}
+                side={DoubleSide}
+                blending={AdditiveBlending}
               />
             </mesh>
           )}
@@ -513,7 +515,7 @@ export function ProjectNode({
               color={project.color}
               transparent
               opacity={0.1}
-              blending={THREE.AdditiveBlending}
+              blending={AdditiveBlending}
               depthWrite={false}
             />
           </mesh>
@@ -525,7 +527,7 @@ export function ProjectNode({
                 color={project.color}
                 transparent
                 opacity={0.4}
-                blending={THREE.AdditiveBlending}
+                blending={AdditiveBlending}
                 depthWrite={false}
               />
             </mesh>

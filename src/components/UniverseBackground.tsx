@@ -1,11 +1,11 @@
-import * as THREE from "three";
+import { AdditiveBlending, BackSide, Color, Mesh, Points, ShaderMaterial } from 'three';
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 
 export function UniverseBackground() {
-  const starsRef = useRef<THREE.Points>(null!);
-  const nebulaRef = useRef<THREE.Points>(null!);
-  const glowRef = useRef<THREE.Mesh>(null!);
+  const starsRef = useRef<Points>(null!);
+  const nebulaRef = useRef<Points>(null!);
+  const glowRef = useRef<Mesh>(null!);
 
   const {
     starPos,
@@ -23,11 +23,11 @@ export function UniverseBackground() {
     const sPhase = new Float32Array(sCount);
 
     const sColors = [
-      new THREE.Color("#ffffff"),
-      new THREE.Color("#e2e8f0"),
-      new THREE.Color("#93c5fd"),
-      new THREE.Color("#fca5a5"),
-      new THREE.Color("#fde047"),
+      new Color("#ffffff"),
+      new Color("#e2e8f0"),
+      new Color("#93c5fd"),
+      new Color("#fca5a5"),
+      new Color("#fde047"),
     ];
 
     for (let i = 0; i < sCount; i++) {
@@ -56,11 +56,11 @@ export function UniverseBackground() {
     const nSize = new Float32Array(nCount);
 
     const nColors = [
-      new THREE.Color("#0ea5e9"),
-      new THREE.Color("#6366f1"),
-      new THREE.Color("#a855f7"),
-      new THREE.Color("#ec4899"),
-      new THREE.Color("#1e1b4b"),
+      new Color("#0ea5e9"),
+      new Color("#6366f1"),
+      new Color("#a855f7"),
+      new Color("#ec4899"),
+      new Color("#1e1b4b"),
     ];
 
     for (let i = 0; i < nCount; i++) {
@@ -162,7 +162,7 @@ export function UniverseBackground() {
 
   useFrame((state) => {
     if (starsRef.current) {
-      (starsRef.current.material as THREE.ShaderMaterial).uniforms.time.value =
+      (starsRef.current.material as ShaderMaterial).uniforms.time.value =
         state.clock.elapsedTime;
       starsRef.current.rotation.y = state.clock.elapsedTime * 0.005;
     }
@@ -178,7 +178,7 @@ export function UniverseBackground() {
         <sphereGeometry args={[120, 32, 32]} />
         <meshBasicMaterial
           color="#02030a"
-          side={THREE.BackSide}
+          side={BackSide}
           depthWrite={false}
         />
       </mesh>
@@ -208,7 +208,7 @@ export function UniverseBackground() {
           args={[nebulaShader]}
           transparent
           depthWrite={false}
-          blending={THREE.AdditiveBlending}
+          blending={AdditiveBlending}
         />
       </points>
 
@@ -243,7 +243,7 @@ export function UniverseBackground() {
           args={[starShader]}
           transparent
           depthWrite={false}
-          blending={THREE.AdditiveBlending}
+          blending={AdditiveBlending}
         />
       </points>
     </group>

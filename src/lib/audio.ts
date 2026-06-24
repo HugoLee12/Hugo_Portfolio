@@ -6,57 +6,153 @@ class AudioManager {
   private ambientGain: GainNode | null = null;
   private ambientFilter: BiquadFilterNode | null = null;
   private initialized = false;
+  private unlocked = false;
+  private unlockCleanup: (() => void) | null = null;
+
+  private getContext() {
+    if (typeof window === "undefined") return null;
+
+    if (!this.ctx) {
+      this.ctx = new (
+        window.AudioContext || (window as any).webkitAudioContext
+      )();
+    }
+
+    return this.ctx;
+  }
 
   init() {
     if (this.initialized) return;
 
     try {
-      if (!this.ctx) {
-        this.ctx = new (
-          window.AudioContext || (window as any).webkitAudioContext
-        )();
-      }
+      const ctx = this.getContext();
+      if (!ctx) return;
 
-      this.ambientOsc = this.ctx.createOscillator();
+      this.ambientOsc = ctx.createOscillator();
       this.ambientOsc.type = "sine";
       this.ambientOsc.frequency.value = 50;
 
-      this.ambientLfo = this.ctx.createOscillator();
+      this.ambientLfo = ctx.createOscillator();
       this.ambientLfo.type = "sine";
       this.ambientLfo.frequency.value = 2;
-      this.ambientLfoGain = this.ctx.createGain();
+      this.ambientLfoGain = ctx.createGain();
       this.ambientLfoGain.gain.value = 10;
       
       this.ambientLfo.connect(this.ambientLfoGain);
       this.ambientLfoGain.connect(this.ambientOsc.frequency);
       this.ambientLfo.start();
 
-      this.ambientFilter = this.ctx.createBiquadFilter();
+      this.ambientFilter = ctx.createBiquadFilter();
       this.ambientFilter.type = "lowpass";
       this.ambientFilter.frequency.value = 100;
 
-      this.ambientGain = this.ctx.createGain();
+      this.ambientGain = ctx.createGain();
       this.ambientGain.gain.value = 0.5;
 
       this.ambientOsc.connect(this.ambientFilter);
       this.ambientFilter.connect(this.ambientGain);
-      this.ambientGain.connect(this.ctx.destination);
+      this.ambientGain.connect(ctx.destination);
 
       this.ambientOsc.start();
       this.initialized = true;
 
-      if (this.ctx.state === "suspended") {
-        this.ctx.resume().catch((e) => console.warn("Failed initial resume:", e));
-      }
+      this.unlock().catch((e) => console.warn("Failed initial resume:", e));
     } catch (e) {
       console.warn("AudioContext not supported or blocked", e);
     }
+  }
+
+  async unlock() {
+    const ctx = this.getContext();
+    if (!ctx) return false;
+
+    if (ctx.state === "suspended") {
+      await ctx.resume();
+    }
+
+    if (ctx.state === "running" && !this.unlocked) {
+      const buffer = ctx.createBuffer(1, 1, 22050);
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(ctx.destination);
+      source.start(0);
+      this.unlocked = true;
+    }
+
+    if (this.unlocked) {
+      this.clearUnlockListeners();
+    }
+
+    return this.unlocked;
   }
 
   resume() {
     if (this.ctx?.state === "suspended") {
       this.ctx.resume().catch((e) => console.warn("Failed to resume:", e));
     }
+  }
+
+  startPortalHoverDrone() {
+    const ctx = this.getContext();
+    if (!ctx) return null;
+
+    this.unlock().catch(() => {});
+
+    const gainNode = ctx.createGain();
+    gainNode.gain.setValueAtTime(0, ctx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 1);
+    gainNode.connect(ctx.destination);
+
+    const osc1 = ctx.createOscillator();
+    osc1.type = "sine";
+    osc1.frequency.setValueAtTime(65.41, ctx.currentTime);
+
+    const osc2 = ctx.createOscillator();
+    osc2.type = "sine";
+    osc2.frequency.setValueAtTime(196.0, ctx.currentTime);
+    osc2.detune.setValueAtTime(5, ctx.currentTime);
+
+    const osc3 = ctx.createOscillator();
+    osc3.type = "triangle";
+    osc3.frequency.setValueAtTime(523.25, ctx.currentTime);
+
+    const osc3Gain = ctx.createGain();
+    osc3Gain.gain.value = 0.05;
+    osc3.connect(osc3Gain);
+    osc3Gain.connect(gainNode);
+
+    osc1.connect(gainNode);
+    osc2.connect(gainNode);
+
+    const oscillators = [osc1, osc2, osc3];
+    oscillators.forEach((osc) => osc.start());
+
+    return {
+      stop: () => {
+        gainNode.gain.cancelScheduledValues(ctx.currentTime);
+        gainNode.gain.setValueAtTime(gainNode.gain.value, ctx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5);
+
+        window.setTimeout(() => {
+          oscillators.forEach((osc) => {
+            try {
+              osc.stop();
+            } catch (e) {
+              // Oscillators can already be stopped during fast hover churn.
+            }
+            try {
+              osc.disconnect();
+            } catch (e) {}
+          });
+          try {
+            osc3Gain.disconnect();
+          } catch (e) {}
+          try {
+            gainNode.disconnect();
+          } catch (e) {}
+        }, 500);
+      },
+    };
   }
 
   setAmbientIntensity(intensity: number) {
@@ -78,27 +174,29 @@ class AudioManager {
   }
 
   private ensureAwake() {
-    if (this.ctx && this.ctx.state === "suspended") {
-      this.ctx.resume().catch((e) => console.warn("Failed to wake audio context:", e));
+    if (!this.ctx || this.ctx.state !== "suspended") return;
+
+    this.ctx.resume().catch((e) => console.warn("Failed to wake audio context:", e));
+    if (this.unlockCleanup) return;
       
-      const unlock = () => {
-        if (this.ctx?.state === "suspended") {
-           this.ctx.resume().then(() => {
-             window.removeEventListener("pointerdown", unlock);
-             window.removeEventListener("keydown", unlock);
-             window.removeEventListener("touchstart", unlock);
-           }).catch(() => {});
-        } else {
-           window.removeEventListener("pointerdown", unlock);
-           window.removeEventListener("keydown", unlock);
-           window.removeEventListener("touchstart", unlock);
-        }
-      };
+    const unlock = () => {
+      this.unlock().catch(() => {});
+    };
       
-      window.addEventListener("pointerdown", unlock);
-      window.addEventListener("keydown", unlock);
-      window.addEventListener("touchstart", unlock);
-    }
+    window.addEventListener("pointerdown", unlock);
+    window.addEventListener("keydown", unlock);
+    window.addEventListener("touchstart", unlock);
+
+    this.unlockCleanup = () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+      window.removeEventListener("touchstart", unlock);
+      this.unlockCleanup = null;
+    };
+  }
+
+  private clearUnlockListeners() {
+    this.unlockCleanup?.();
   }
 
   stopAmbient() {

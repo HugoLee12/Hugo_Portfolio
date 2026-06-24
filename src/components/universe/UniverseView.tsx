@@ -11,6 +11,8 @@ interface UniverseViewProps {
   onExit: () => void;
 }
 
+const UNIVERSE_CANVAS_DPR: [number, number] = [1, 1.25];
+
 export function UniverseView({ onExit }: UniverseViewProps) {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     null,
@@ -84,6 +86,8 @@ export function UniverseView({ onExit }: UniverseViewProps) {
       >
         <Canvas
           camera={{ position: [0, 15, 20], fov: 45 }}
+          dpr={UNIVERSE_CANVAS_DPR}
+          gl={{ antialias: false, powerPreference: "high-performance" }}
           onPointerMissed={() => setSelectedProjectId(null)}
         >
           <Suspense fallback={null}>

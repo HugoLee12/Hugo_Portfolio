@@ -183,26 +183,26 @@ export function AboutSection() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-6">
                     <CoreCompetency 
                       index="01" 
-                      title="Frontend Architecture" 
-                      description="Building responsive, accessible UIs with React, TypeScript, and Tailwind CSS." 
+                      title="React Frontend" 
+                      description="Building CMS interfaces with React, TypeScript, Vite, React Hooks, Context API, and Tailwind CSS." 
                       delay={0.5} 
                     />
                     <CoreCompetency 
                       index="02" 
-                      title="Backend Systems" 
-                      description="Architecting resilient server-side logic and APIs with Node.js and SQL/NoSQL databases." 
+                      title="ASP.NET Backend" 
+                      description="Developing RESTful APIs with ASP.NET Core Web API, Entity Framework Core, and SQL Server." 
                       delay={0.6} 
                     />
                     <CoreCompetency 
                       index="03" 
-                      title="Internal Tooling" 
-                      description="Developing custom dashboards and efficient workflow automation for internal platforms." 
+                      title="CMS & Publishing" 
+                      description="Contributing to article management, dashboards, e-kiosk workflows, and publishing operations in AI Press." 
                       delay={0.7} 
                     />
                     <CoreCompetency 
                       index="04" 
-                      title="Product Strategy" 
-                      description="Translating requirements into intuitive flows, prioritizing simplicity and function." 
+                      title="Auth & Permissions" 
+                      description="Working with JWT authentication and role/permission-based authorization for protected systems." 
                       delay={0.8} 
                     />
                   </div>

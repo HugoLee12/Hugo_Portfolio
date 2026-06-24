@@ -1,26 +1,14 @@
 export const experiences = [
   {
     id: "exp-01",
-    role: "Full-stack Developer Trainee",
-    company: "Independent / Stealth",
-    period: "2023 - PRESENT",
-    description: "Developing core modules for secure SaaS management platforms and internal tools.",
+    role: "Full Stack Developer",
+    company: "Faculty-led Software Development Team",
+    period: "12/2025 - PRESENT",
+    description: "Student software development team guided by faculty, building real deployable products including AI Press.",
     achievements: [
-      "Engineered Role-Based Access Control (RBAC) securely for admin-facing dashboards.",
-      "Constructed a custom Content Management System (CMS) extending baseline CRUD functionalities.",
-      "Integrated external communication APIs and handled incremental database migrations."
-    ]
-  },
-  {
-    id: "exp-02",
-    role: "Frontend Prototyper",
-    company: "Freelance Operations",
-    period: "2022 - 2023",
-    description: "Built responsive landing applications and interactive digital portfolios.",
-    achievements: [
-      "Translated high-fidelity design specifications into scalable Tailwind CSS components.",
-      "Optimized core web vitals and improved layout accessibility ratings.",
-      "Coordinated with stakeholders to refine project parameters and ensure timely delivery."
+      "Worked as a full-stack member across team projects, with regular meetings, code review, feedback, and peer revision.",
+      "Participated across the development lifecycle: design, coding, review, testing, and deployment.",
+      "Contributed to CMS, publishing, dashboard, authentication, and role/permission features in AI Press."
     ]
   }
 ];

@@ -2,7 +2,7 @@ import { useRef, useEffect, useState, useMemo } from "react";
 import { motion, useAnimate } from "motion/react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import * as THREE from "three";
+import { AdditiveBlending, Color, Mesh, ShaderMaterial } from 'three';
 import { Project } from "../data";
 import { audioManager } from "../lib/audio";
 import { DossierContent } from "./DossierContent";
@@ -271,13 +271,13 @@ const cloudFragmentShader = `
 `;
 
 function IsolatedPlanetNode({ project }: { project: Project }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const materialRef = useRef<THREE.ShaderMaterial>(null);
+  const meshRef = useRef<Mesh>(null);
+  const materialRef = useRef<ShaderMaterial>(null);
 
   const uniforms = useMemo(
     () => ({
       uTime: { value: 0 },
-      uColor: { value: new THREE.Color(project.color) },
+      uColor: { value: new Color(project.color) },
       uEmissiveIntensity: { value: 0.8 },
       uHasRings: { value: 0.0 },
     }),
@@ -313,7 +313,7 @@ function IsolatedPlanetNode({ project }: { project: Project }) {
             vertexShader={cloudVertexShader}
             fragmentShader={cloudFragmentShader}
             transparent={true}
-            blending={THREE.AdditiveBlending}
+            blending={AdditiveBlending}
             depthWrite={false}
           />
         </mesh>

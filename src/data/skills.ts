@@ -7,41 +7,41 @@ export interface SkillData {
 
 export const skillCategories = [
   {
-    category: "Frontend Subsystems",
-    skills: ["React", "TypeScript", "Tailwind CSS", "Zustand", "HTML/CSS"]
+    category: "Languages",
+    skills: ["C#", "TypeScript"]
   },
   {
-    category: "Backend Core",
-    skills: ["Node.js", "Express", "Firebase", "PostgreSQL", "Cloud SQL"]
+    category: "Frontend",
+    skills: ["React", "Vite", "React Hooks", "Context API", "Tailwind CSS"]
   },
   {
-    category: "Architecture & Design",
-    skills: ["RBAC Security", "CMS Architectures", "RESTful Interfaces", "System Modeling"]
+    category: "Backend & Data",
+    skills: ["ASP.NET Core Web API", "RESTful API", "Entity Framework Core", "SQL Server"]
   },
   {
-    category: "Deployment & Operations",
-    skills: ["Git Version Control", "Vite Toolchains", "Docker Basics", "GCP Fundamentals"]
+    category: "Auth & Workflow",
+    skills: ["JWT Authentication", "Role/Permission Access Control", "Git", "GitHub", "npm", "AI Workflow Design", "AI-Assisted Development"]
   }
 ];
 
 export const enhancedSkills: Record<string, SkillData> = {
-  "React": { name: "React", category: "Frontend Subsystems", description: "Component-based UI library for dynamic client experiences.", relations: ["TypeScript", "Tailwind CSS", "Zustand"] },
-  "TypeScript": { name: "TypeScript", category: "Frontend Subsystems", description: "Strict syntactical superset of JavaScript ensuring type safety.", relations: ["React", "Node.js"] },
-  "Tailwind CSS": { name: "Tailwind CSS", category: "Frontend Subsystems", description: "Utility-first CSS framework for rapid UI styling.", relations: ["React", "HTML/CSS"] },
-  "Zustand": { name: "Zustand", category: "Frontend Subsystems", description: "Small, fast, and scalable bearbones state-management.", relations: ["React"] },
-  "HTML/CSS": { name: "HTML/CSS", category: "Frontend Subsystems", description: "Core web markup and stylesheet languages.", relations: ["Tailwind CSS"] },
-  "Node.js": { name: "Node.js", category: "Backend Core", description: "Asynchronous event-driven JavaScript runtime.", relations: ["Express", "TypeScript"] },
-  "Express": { name: "Express", category: "Backend Core", description: "Fast, unopinionated, minimalist web framework for Node.js.", relations: ["Node.js", "RESTful Interfaces"] },
-  "Firebase": { name: "Firebase", category: "Backend Core", description: "Platform developed by Google for creating mobile and web applications.", relations: ["Node.js", "GCP Fundamentals"] },
-  "PostgreSQL": { name: "PostgreSQL", category: "Backend Core", description: "Powerful, open source object-relational database system.", relations: ["Node.js", "Cloud SQL"] },
-  "Cloud SQL": { name: "Cloud SQL", category: "Backend Core", description: "Fully managed relational database service for MySQL, PostgreSQL, and SQL Server.", relations: ["PostgreSQL", "GCP Fundamentals"] },
-  "RBAC Security": { name: "RBAC Security", category: "Architecture & Design", description: "Role-based access control for managing system permissions.", relations: ["System Modeling", "CMS Architectures"] },
-  "CMS Architectures": { name: "CMS Architectures", category: "Architecture & Design", description: "Design patterns for content management systems.", relations: ["RBAC Security", "PostgreSQL", "RESTful Interfaces"] },
-  "RESTful Interfaces": { name: "RESTful Interfaces", category: "Architecture & Design", description: "Architectural style for application programming interfaces.", relations: ["Express", "System Modeling"] },
-  "System Modeling": { name: "System Modeling", category: "Architecture & Design", description: "Process of developing abstract models of a system.", relations: ["RBAC Security", "RESTful Interfaces"] },
-  "Git Version Control": { name: "Git Version Control", category: "Deployment & Operations", description: "Distributed version control system for tracking changes.", relations: ["Vite Toolchains"] },
-  "Vite Toolchains": { name: "Vite Toolchains", category: "Deployment & Operations", description: "Next generation frontend tooling for fast build and dev server.", relations: ["React", "TypeScript"] },
-  "Docker Basics": { name: "Docker Basics", category: "Deployment & Operations", description: "OS-level virtualization to deliver software in packages called containers.", relations: ["GCP Fundamentals"] },
-  "GCP Fundamentals": { name: "GCP Fundamentals", category: "Deployment & Operations", description: "Suite of cloud computing services provided by Google.", relations: ["Cloud SQL", "Firebase", "Docker Basics"] }
+  "C#": { name: "C#", category: "Languages", description: "Primary backend language used with ASP.NET Core Web API.", relations: ["ASP.NET Core Web API", "Entity Framework Core"] },
+  "TypeScript": { name: "TypeScript", category: "Languages", description: "Typed JavaScript used for React frontend development.", relations: ["React", "Vite", "React Hooks"] },
+  "React": { name: "React", category: "Frontend", description: "Component-based UI library used to build AI Press frontend modules.", relations: ["TypeScript", "React Hooks", "Context API", "Tailwind CSS"] },
+  "Vite": { name: "Vite", category: "Frontend", description: "Frontend tooling used for fast React development and production builds.", relations: ["React", "TypeScript", "npm"] },
+  "React Hooks": { name: "React Hooks", category: "Frontend", description: "React state and lifecycle patterns for interactive UI modules.", relations: ["React", "Context API"] },
+  "Context API": { name: "Context API", category: "Frontend", description: "React state-sharing mechanism for application-level data flow.", relations: ["React", "React Hooks"] },
+  "Tailwind CSS": { name: "Tailwind CSS", category: "Frontend", description: "Utility-first CSS framework used for responsive frontend styling.", relations: ["React", "TypeScript"] },
+  "ASP.NET Core Web API": { name: "ASP.NET Core Web API", category: "Backend & Data", description: "Backend framework used to build RESTful services for AI Press.", relations: ["C#", "RESTful API", "JWT Authentication", "Entity Framework Core"] },
+  "RESTful API": { name: "RESTful API", category: "Backend & Data", description: "API design approach used for client-server communication.", relations: ["ASP.NET Core Web API", "JWT Authentication"] },
+  "Entity Framework Core": { name: "Entity Framework Core", category: "Backend & Data", description: "ORM used with SQL Server for backend data access.", relations: ["C#", "SQL Server", "ASP.NET Core Web API"] },
+  "SQL Server": { name: "SQL Server", category: "Backend & Data", description: "Relational database used for application data persistence.", relations: ["Entity Framework Core", "Role/Permission Access Control"] },
+  "JWT Authentication": { name: "JWT Authentication", category: "Auth & Workflow", description: "Token-based authentication used for protected backend APIs.", relations: ["ASP.NET Core Web API", "Role/Permission Access Control"] },
+  "Role/Permission Access Control": { name: "Role/Permission Access Control", category: "Auth & Workflow", description: "Authorization model for managing user roles and permissions.", relations: ["JWT Authentication", "SQL Server"] },
+  "Git": { name: "Git", category: "Auth & Workflow", description: "Version control used in team development and code review workflows.", relations: ["GitHub"] },
+  "GitHub": { name: "GitHub", category: "Auth & Workflow", description: "Repository hosting and collaboration platform used with Git.", relations: ["Git"] },
+  "npm": { name: "npm", category: "Auth & Workflow", description: "JavaScript package manager used for frontend tooling and scripts.", relations: ["Vite", "React"] },
+  "AI Workflow Design": { name: "AI Workflow Design", category: "Auth & Workflow", description: "Designing AI-assisted development workflows for practical software delivery.", relations: ["AI-Assisted Development"] },
+  "AI-Assisted Development": { name: "AI-Assisted Development", category: "Auth & Workflow", description: "Using AI tools to support implementation, review, and iteration.", relations: ["AI Workflow Design", "GitHub"] }
 };
 

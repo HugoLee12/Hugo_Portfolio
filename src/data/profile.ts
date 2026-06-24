@@ -1,13 +1,20 @@
 export const profile = {
-  name: "Nhat Anh Hao (Leo)",
+  name: "Hugo Lee",
   title: "Full-Stack Developer",
-  status: "Available",
-  focus: "System Architecture & UI/UX",
-  location: "Vietnam",
-  bio: "Software developer focusing on resilient systems, robust internal tools, SaaS prototypes, and management dashboards. Currently focused on integrating modern frontend frameworks with scalable backend architectures.",
+  status: "Open to Internship / Junior Roles",
+  focus: "Backend Architecture & System Design",
+  location: "Khanh Hoa, Vietnam",
+  bio: "Third-year Information Technology student focused on full-stack CMS development with React, TypeScript, and ASP.NET Core. I want to contribute to real products while growing deeper in backend architecture and system design.",
   contact: {
     email: "lenhatanhhao14@gmail.com",
-    github: "github.com/lenhatanhhao",
-    linkedin: "linkedin.com/in/lenhatanhhao"
+    phone: "0352 227 403",
+    github: "github.com/HugoLee12",
+    linkedin: ""
+  },
+  education: {
+    school: "Thai Binh Duong University",
+    period: "2023 - 2026",
+    major: "Information Technology - Software Development",
+    gpa: "3.2/4.0"
   }
 };

@@ -1,37 +1,48 @@
 import React from "react";
 import { HeroSection } from "../sections/HeroSection";
 import { AboutSection } from "../sections/AboutSection";
-import { SkillsSection } from "../sections/SkillsSection";
 import { ExperienceSection } from "../sections/ExperienceSection";
 import { UniverseEntrySection } from "../sections/UniverseEntrySection";
 import { ContactSection } from "../sections/ContactSection";
-import { CosmicBackground } from "./hud/CosmicBackground";
 import { useScroll, useMotionValueEvent, motion } from "motion/react";
-import { Canvas } from "@react-three/fiber";
-import { Starfield } from "./Starfield";
 import { EventHorizonFooter } from "./EventHorizonFooter";
 
+const StarfieldBackground = React.lazy(() =>
+  import("./StarfieldBackground").then((module) => ({
+    default: module.StarfieldBackground,
+  })),
+);
+
+const SkillsSection = React.lazy(() =>
+  import("../sections/SkillsSection").then((module) => ({
+    default: module.SkillsSection,
+  })),
+);
+
 interface PortfolioLayoutProps {
+  isUniverseActive?: boolean;
   onEnterUniverse: () => void;
+  onPreloadUniverse?: () => void;
 }
 
-function StarfieldBackground() {
+function StarfieldFallback() {
   return (
-    <div className="fixed inset-0 z-[0] pointer-events-auto bg-[#0a0a24]">
-      <Canvas 
-        eventSource={typeof window !== "undefined" ? document.getElementById("root") || document.body : undefined}
-        dpr={[1, 1.5]}
-        gl={{ antialias: false, powerPreference: "low-power" }}
-      >
-        <Starfield />
-      </Canvas>
-    </div>
+    <div className="fixed inset-0 z-[0] pointer-events-none bg-[#0a0a24]" />
   );
 }
 
-export function PortfolioLayout({ onEnterUniverse }: PortfolioLayoutProps) {
+function SkillsSuspenseFallback() {
+  return <div className="min-h-[780px] w-full" aria-busy="true" />;
+}
+
+export function PortfolioLayout({
+  isUniverseActive = false,
+  onEnterUniverse,
+  onPreloadUniverse,
+}: PortfolioLayoutProps) {
   const { scrollY } = useScroll();
   const [isScrolled, setIsScrolled] = React.useState(false);
+  const shouldRenderShellCanvases = !isUniverseActive;
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     setIsScrolled(latest > 50);
@@ -39,7 +50,11 @@ export function PortfolioLayout({ onEnterUniverse }: PortfolioLayoutProps) {
 
   return (
     <div className="min-h-screen bg-transparent text-slate-400 font-sans relative">
-      <StarfieldBackground />
+      {shouldRenderShellCanvases && (
+        <React.Suspense fallback={<StarfieldFallback />}>
+          <StarfieldBackground />
+        </React.Suspense>
+      )}
       
       {/* Scanlines overlay removed */}
 
@@ -68,6 +83,8 @@ export function PortfolioLayout({ onEnterUniverse }: PortfolioLayoutProps) {
           
           <button 
             onClick={onEnterUniverse} 
+            onFocus={onPreloadUniverse}
+            onPointerEnter={onPreloadUniverse}
             className="group relative px-3 py-1.5 sm:px-4 sm:py-1.5 flex items-center gap-2 text-[10px] sm:text-[11px] font-mono tracking-[0.15em] text-[#8E95A3] hover:text-[#D7DAE2] transition-colors overflow-hidden rounded-md"
           >
             <span className="absolute inset-0 bg-[#080b14]/40 border border-[#b4c3d7]/10 rounded-md transition-all group-hover:bg-[#080b14]/60 group-hover:border-[#b4c3d7]/20"></span>
@@ -85,9 +102,20 @@ export function PortfolioLayout({ onEnterUniverse }: PortfolioLayoutProps) {
         <div className="pointer-events-auto">
           <HeroSection />
           <AboutSection />
-          <SkillsSection />
+          <div id="skills" className="scroll-mt-32">
+            {shouldRenderShellCanvases ? (
+              <React.Suspense fallback={<SkillsSuspenseFallback />}>
+                <SkillsSection />
+              </React.Suspense>
+            ) : (
+              <SkillsSuspenseFallback />
+            )}
+          </div>
           <ExperienceSection />
-          <UniverseEntrySection onEnterUniverse={onEnterUniverse} />
+          <UniverseEntrySection
+            onEnterUniverse={onEnterUniverse}
+            onPreloadUniverse={onPreloadUniverse}
+          />
           <ContactSection />
         </div>
         

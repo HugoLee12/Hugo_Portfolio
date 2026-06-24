@@ -1,115 +1,19 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { HudSection } from '../components/hud/HudSection';
 import { motion } from 'motion/react';
-
-let globalAudioCtx: AudioContext | null = null;
-let isAudioUnlocked = false;
-
-const initGlobalAudio = async () => {
-  if (typeof window === 'undefined') return false;
-  if (!globalAudioCtx) {
-    globalAudioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-  }
-  if (globalAudioCtx.state === 'suspended') {
-    try {
-      await globalAudioCtx.resume();
-    } catch (e) {
-      return false;
-    }
-  }
-  
-  if (globalAudioCtx.state === 'running' && !isAudioUnlocked) {
-    // Play a silent buffer to force unlock on strict browsers
-    const buffer = globalAudioCtx.createBuffer(1, 1, 22050);
-    const source = globalAudioCtx.createBufferSource();
-    source.buffer = buffer;
-    source.connect(globalAudioCtx.destination);
-    source.start(0);
-    isAudioUnlocked = true;
-  }
-  return isAudioUnlocked;
-};
-
-// Listen for first interaction to unlock audio
-if (typeof window !== 'undefined') {
-  const events = ['pointerdown', 'touchstart', 'keydown', 'wheel', 'scroll', 'pointermove'];
-  const unlock = async () => {
-    const unlocked = await initGlobalAudio();
-    if (unlocked) {
-      events.forEach(e => window.removeEventListener(e, unlock));
-    }
-  };
-  events.forEach(e => window.addEventListener(e, unlock, { passive: true }));
-}
+import { audioManager } from '../lib/audio';
 
 const useUniverseHoverSound = () => {
-  const oscillatorsRef = useRef<OscillatorNode[]>([]);
-  const gainNodeRef = useRef<GainNode | null>(null);
+  const droneRef = useRef<{ stop: () => void } | null>(null);
 
   const startSound = useCallback(() => {
-    if (!globalAudioCtx) {
-      globalAudioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    const ctx = globalAudioCtx;
-    if (!ctx) return;
-    
-    if (ctx.state === 'suspended') {
-      ctx.resume().catch(() => {});
-    }
-
-    const gainNode = ctx.createGain();
-    gainNode.gain.setValueAtTime(0, ctx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 1); // 1s fade in
-    gainNode.connect(ctx.destination);
-    gainNodeRef.current = gainNode;
-
-    const osc1 = ctx.createOscillator();
-    osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(65.41, ctx.currentTime); // Deep drone (C2)
-    
-    const osc2 = ctx.createOscillator();
-    osc2.type = 'sine';
-    osc2.frequency.setValueAtTime(196.00, ctx.currentTime); // Ethereal harmonic (G3)
-    osc2.detune.setValueAtTime(5, ctx.currentTime);
-    
-    const osc3 = ctx.createOscillator();
-    osc3.type = 'triangle';
-    osc3.frequency.setValueAtTime(523.25, ctx.currentTime); // High shimmer (C5)
-    
-    const osc3Gain = ctx.createGain();
-    osc3Gain.gain.value = 0.05;
-    osc3.connect(osc3Gain);
-    osc3Gain.connect(gainNode);
-
-    osc1.connect(gainNode);
-    osc2.connect(gainNode);
-
-    osc1.start();
-    osc2.start();
-    osc3.start();
-
-    oscillatorsRef.current = [osc1, osc2, osc3];
+    if (droneRef.current) return;
+    droneRef.current = audioManager.startPortalHoverDrone();
   }, []);
 
   const stopSound = useCallback(() => {
-    if (!globalAudioCtx || !gainNodeRef.current) return;
-    
-    const ctx = globalAudioCtx;
-    const gainNode = gainNodeRef.current;
-    
-    gainNode.gain.cancelScheduledValues(ctx.currentTime);
-    gainNode.gain.setValueAtTime(gainNode.gain.value, ctx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5); // 0.5s fade out
-
-    setTimeout(() => {
-      oscillatorsRef.current.forEach(osc => {
-        try { osc.stop(); } catch(e) {}
-        try { osc.disconnect(); } catch(e) {}
-      });
-      oscillatorsRef.current = [];
-      try { gainNode.disconnect(); } catch(e) {}
-      gainNodeRef.current = null;
-    }, 500);
+    droneRef.current?.stop();
+    droneRef.current = null;
   }, []);
 
   useEffect(() => {
@@ -123,6 +27,7 @@ const useUniverseHoverSound = () => {
 
 interface UniverseEntrySectionProps {
   onEnterUniverse: () => void;
+  onPreloadUniverse?: () => void;
 }
 
 const OrbitalRings = ({ isHovered }: { isHovered: boolean }) => {
@@ -283,9 +188,18 @@ const PortalParticles = ({ isHovered }: { isHovered: boolean }) => {
   );
 };
 
-export function UniverseEntrySection({ onEnterUniverse }: UniverseEntrySectionProps) {
+export function UniverseEntrySection({
+  onEnterUniverse,
+  onPreloadUniverse,
+}: UniverseEntrySectionProps) {
   const [isHovered, setIsHovered] = useState(false);
   const { startSound, stopSound } = useUniverseHoverSound();
+
+  const handleHoverStart = () => {
+    setIsHovered(true);
+    startSound();
+    onPreloadUniverse?.();
+  };
 
   return (
     <HudSection id="universe-entry" className="relative my-24 md:my-40 overflow-hidden">
@@ -355,7 +269,7 @@ export function UniverseEntrySection({ onEnterUniverse }: UniverseEntrySectionPr
         {/* Portal Button - The Glass Horizon */}
         <div 
           className="mt-20 mb-12 relative flex justify-center items-center"
-          onMouseEnter={() => { setIsHovered(true); startSound(); }}
+          onMouseEnter={handleHoverStart}
           onMouseLeave={() => { setIsHovered(false); stopSound(); }}
         >
           <OrbitalRings isHovered={isHovered} />
@@ -363,6 +277,9 @@ export function UniverseEntrySection({ onEnterUniverse }: UniverseEntrySectionPr
 
           <button 
             onClick={onEnterUniverse} 
+            onFocus={() => {
+              onPreloadUniverse?.();
+            }}
             className="group relative flex items-center justify-center w-56 h-56 md:w-72 md:h-72 rounded-full border border-white/10 transition-all duration-1000 ease-out hover:border-white portal-hover-shake z-10"
           >
             {/* Lensing Effect */}

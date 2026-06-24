@@ -8,6 +8,8 @@ import { CelestialSkillCore } from '../components/CelestialSkillCore';
 import { useAppStore } from '../store';
 import { motion, AnimatePresence } from 'motion/react';
 
+const SKILLS_CANVAS_DPR: [number, number] = [1, 1.25];
+
 export function SkillsSection() {
   const allSkills = useMemo(() => {
     const combined = skillCategories.flatMap(group => group.skills);
@@ -62,7 +64,7 @@ export function SkillsSection() {
   }, []);
 
   return (
-    <HudSection id="skills" className="scroll-mt-32">
+    <HudSection id="skills-content" className="scroll-mt-32">
       <SectionHeader title="SKILLS" subtitle="Technical Capabilities" number="02" />
       
       <div 
@@ -111,7 +113,7 @@ export function SkillsSection() {
         <Canvas 
           camera={{ position: [0, 0, 45], fov: 60 }} 
           className="w-full h-full absolute inset-0 z-0 [mask-image:radial-gradient(ellipse_at_center,rgba(0,0,0,1)_50%,rgba(0,0,0,0)_100%)] [-webkit-mask-image:radial-gradient(ellipse_at_center,rgba(0,0,0,1)_50%,rgba(0,0,0,0)_100%)]"
-          dpr={[1, 1.5]}
+          dpr={SKILLS_CANVAS_DPR}
           gl={{ antialias: false, powerPreference: "high-performance", alpha: true }}
         >
           <fogExp2 attach="fog" color="#020617" density={0.015} />
@@ -131,4 +133,3 @@ export function SkillsSection() {
     </HudSection>
   );
 }
-

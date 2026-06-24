@@ -1,19 +1,53 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { profile } from '../data/profile';
 
 export function ContactSection() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSent, setIsSent] = useState(false);
+  const [isOpeningMail, setIsOpeningMail] = useState(false);
+  const resetTimerRef = useRef<number | null>(null);
+  const openMailTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) {
+        window.clearTimeout(resetTimerRef.current);
+      }
+      if (openMailTimerRef.current) {
+        window.clearTimeout(openMailTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSent(true);
-      setTimeout(() => setIsSent(false), 3000);
-    }, 2500);
+    const form = e.currentTarget as HTMLFormElement;
+    const formData = new FormData(form);
+    const name = String(formData.get("name") || "").trim();
+    const email = String(formData.get("email") || "").trim();
+    const message = String(formData.get("message") || "").trim();
+    const subject = encodeURIComponent(`Portfolio inquiry from ${name}`);
+    const body = encodeURIComponent(
+      `Name: ${name}\nEmail: ${email}\n\n${message}`,
+    );
+
+    if (resetTimerRef.current) {
+      window.clearTimeout(resetTimerRef.current);
+    }
+    if (openMailTimerRef.current) {
+      window.clearTimeout(openMailTimerRef.current);
+    }
+
+    setIsOpeningMail(true);
+    const mailtoUrl = `mailto:${profile.contact.email}?subject=${subject}&body=${body}`;
+    openMailTimerRef.current = window.setTimeout(() => {
+      window.location.href = mailtoUrl;
+      openMailTimerRef.current = null;
+    }, 900);
+
+    resetTimerRef.current = window.setTimeout(() => {
+      setIsOpeningMail(false);
+      resetTimerRef.current = null;
+    }, 2000);
   };
 
   return (
@@ -43,7 +77,7 @@ export function ContactSection() {
                 </span>
              </h2>
              <p className="mt-8 text-slate-400 font-mono text-sm max-w-sm tracking-wide leading-relaxed">
-               Open a frequency. Whether it's a project inquiry or a cosmic transmission, the channel is open and waiting for your payload.
+               Compose a direct email transmission. Your message opens in your mail client so you can review and send it yourself.
              </p>
           </motion.div>
 
@@ -71,6 +105,7 @@ export function ContactSection() {
                     <input 
                       type="text" 
                       id="name" 
+                      name="name"
                       required
                       className="peer w-full bg-transparent border-b border-white/10 py-2 text-sm text-white font-mono placeholder-transparent focus:outline-none focus:border-transparent transition-colors"
                       placeholder="Name"
@@ -85,6 +120,7 @@ export function ContactSection() {
                     <input 
                       type="email" 
                       id="email" 
+                      name="email"
                       required
                       className="peer w-full bg-transparent border-b border-white/10 py-2 text-sm text-white font-mono placeholder-transparent focus:outline-none focus:border-transparent transition-colors"
                       placeholder="Email"
@@ -98,6 +134,7 @@ export function ContactSection() {
                   <div className="relative group">
                     <textarea 
                       id="message" 
+                      name="message"
                       rows={1}
                       required
                       className="peer w-full bg-transparent border-b border-white/10 py-2 text-sm text-white font-mono placeholder-transparent focus:outline-none focus:border-transparent transition-colors resize-none min-h-[36px] overflow-hidden"
@@ -112,33 +149,31 @@ export function ContactSection() {
                   <div className="pt-8">
                     <button 
                       type="submit"
-                      disabled={isSubmitting || isSent}
+                      disabled={isOpeningMail}
                       className="relative w-full overflow-hidden border border-white/10 bg-transparent py-4 text-xs font-mono tracking-[0.2em] uppercase text-white transition-all duration-700 hover:bg-white/5 hover:border-white/30 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] disabled:opacity-50 disabled:cursor-not-allowed group/btn"
                     >
                       {/* Sweeping light effect on hover */}
                       <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite] pointer-events-none" />
                       
                       <div className="relative z-10 flex items-center justify-center gap-3">
-                         {isSubmitting ? (
+                         {isOpeningMail ? (
                            <>
                              <span className="flex space-x-1">
                                <motion.span animate={{ opacity: [0.2, 1, 0.2] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0 }} className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
                                <motion.span animate={{ opacity: [0.2, 1, 0.2] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.2 }} className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
                                <motion.span animate={{ opacity: [0.2, 1, 0.2] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.4 }} className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
                              </span>
-                             <span className="text-white">Transmitting...</span>
+                             <span className="text-white">Opening Mail Client...</span>
                            </>
-                         ) : isSent ? (
-                           <span className="text-emerald-400">Link Established</span>
                          ) : (
-                           <span>Send Message</span>
+                           <span>Open Mail Client</span>
                          )}
                       </div>
                     </button>
                     {/* Destination info */}
                     <div className="mt-4 text-center">
                       <span className="text-[9px] text-slate-600 font-mono tracking-widest uppercase">
-                        DESTINATION: {profile.contact.email}
+                        DESTINATION: {profile.contact.email} // SENDS FROM YOUR MAIL APP
                       </span>
                     </div>
                   </div>

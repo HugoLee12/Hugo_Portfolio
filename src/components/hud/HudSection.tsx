@@ -13,9 +13,8 @@ export function HudSection({
   return (
     <motion.section 
       id={id} 
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
+      initial={false}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, ease: "easeOut" }}
       className={`w-full py-16 md:py-24 scroll-mt-24 md:scroll-mt-32 lg:scroll-mt-36 ${className}`}
     >

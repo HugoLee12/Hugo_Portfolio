@@ -1,14 +1,14 @@
 import React, { useRef, useMemo, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Text, Billboard, Line } from '@react-three/drei';
-import * as THREE from 'three';
+import { AdditiveBlending, BackSide, Color, Group, MathUtils, Mesh, PointLight, Vector3 } from 'three';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { useAppStore } from '../store';
 import { enhancedSkills, SkillData } from '../data/skills';
 
 interface WordProps {
   children: string;
-  position: THREE.Vector3;
+  position: Vector3;
   skillData?: SkillData;
 }
 
@@ -39,12 +39,13 @@ function Word({ children, position }: WordProps) {
     document.body.style.cursor = 'auto';
   };
 
-  const targetVec = useMemo(() => new THREE.Vector3(), []);
-  const tempCamDir = useMemo(() => new THREE.Vector3(), []);
-  const currentColor = useMemo(() => new THREE.Color('#64748b'), []);
-  const targetColorObj = useMemo(() => new THREE.Color(), []);
-  const glowColor = useMemo(() => new THREE.Color('#88eadd'), []);
-  const brightColor = useMemo(() => new THREE.Color('#ffffff'), []);
+  const targetVec = useMemo(() => new Vector3(), []);
+  const tempCamDir = useMemo(() => new Vector3(), []);
+  const targetScaleVec = useMemo(() => new Vector3(), []);
+  const currentColor = useMemo(() => new Color('#64748b'), []);
+  const targetColorObj = useMemo(() => new Color(), []);
+  const glowColor = useMemo(() => new Color('#88eadd'), []);
+  const brightColor = useMemo(() => new Color('#ffffff'), []);
 
   useFrame((state) => {
     if (ref.current && ref.current.scale && typeof ref.current.scale.lerp === 'function') {
@@ -64,7 +65,8 @@ function Word({ children, position }: WordProps) {
       
       let baseScale = 0.8 + (normalizedZ * 0.4); // 0.8 to 1.2
       let targetScale = isHovered ? baseScale * 1.6 : (isRelated ? baseScale * 1.3 : baseScale);
-      ref.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.15);
+      targetScaleVec.set(targetScale, targetScale, targetScale);
+      ref.current.scale.lerp(targetScaleVec, 0.15);
 
       // Depth-based opacity (ambient)
       let targetOpacity = 0.1 + (normalizedZ * 0.4); // 0.1 to 0.5
@@ -122,7 +124,7 @@ function Word({ children, position }: WordProps) {
       
       currentColor.lerp(targetColorObj, dynamicLerpSpeed);
       
-      const newOpacity = THREE.MathUtils.lerp(ref.current.fillOpacity, targetOpacity, dynamicLerpSpeed);
+      const newOpacity = MathUtils.lerp(ref.current.fillOpacity, targetOpacity, dynamicLerpSpeed);
       ref.current.fillOpacity = newOpacity;
       ref.current.color = currentColor.getHex();
     }
@@ -132,12 +134,15 @@ function Word({ children, position }: WordProps) {
     <Billboard position={position}>
       <mesh onPointerOver={over} onPointerOut={out}>
         <planeGeometry args={[children.length * 0.7, 1.5]} />
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
       </mesh>
       <Text
         ref={ref}
-        fillOpacity={0}
-        depthWrite={false}
+        color="#64748b"
+        fillOpacity={0.35}
+        anchorX="center"
+        anchorY="middle"
+        material-depthWrite={false}
         {...fontProps}
       >
         {children}
@@ -147,7 +152,7 @@ function Word({ children, position }: WordProps) {
 }
 
 // Draw lines between related skills
-function ConnectionLines({ positions }: { positions: Record<string, THREE.Vector3> }) {
+function ConnectionLines({ positions }: { positions: Record<string, Vector3> }) {
   const hoveredSkill = useAppStore(state => state.hoveredSkill);
 
   const lines = useMemo(() => {
@@ -162,7 +167,7 @@ function ConnectionLines({ positions }: { positions: Record<string, THREE.Vector
       const endPos = positions[related];
       if (!endPos) return null;
       return [centerPos, endPos];
-    }).filter(Boolean) as [THREE.Vector3, THREE.Vector3][];
+    }).filter(Boolean) as [Vector3, Vector3][];
 
   }, [hoveredSkill, positions]);
 
@@ -183,8 +188,8 @@ function ConnectionLines({ positions }: { positions: Record<string, THREE.Vector
 }
 
 function AstrolabeRings() {
-  const ring1Ref = useRef<THREE.Mesh>(null!);
-  const ring2Ref = useRef<THREE.Mesh>(null!);
+  const ring1Ref = useRef<Mesh>(null!);
+  const ring2Ref = useRef<Mesh>(null!);
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
@@ -211,9 +216,9 @@ function AstrolabeRings() {
         <meshBasicMaterial color="#6FD6C8" transparent opacity={0.08} />
       </mesh>
       {/* Sphere environment haze */}
-      <mesh>
+      <mesh renderOrder={-10}>
         <sphereGeometry args={[16, 32, 32]} />
-        <meshBasicMaterial color="#9BAFC3" transparent opacity={0.02} side={THREE.BackSide} />
+        <meshBasicMaterial color="#9BAFC3" transparent opacity={0.02} side={BackSide} depthWrite={false} depthTest={false} />
       </mesh>
     </group>
   );
@@ -379,10 +384,12 @@ const coronaFragmentShader = `
 `;
 
 function CoreParticle() {
-  const sunRef = useRef<THREE.Mesh>(null!);
-  const coronaRef = useRef<THREE.Mesh>(null!);
-  const lightRef = useRef<THREE.PointLight>(null!);
+  const sunRef = useRef<Mesh>(null!);
+  const coronaRef = useRef<Mesh>(null!);
+  const lightRef = useRef<PointLight>(null!);
   const hoveredSkill = useAppStore(state => state.hoveredSkill);
+  const sunScaleVec = useMemo(() => new Vector3(), []);
+  const coronaScaleVec = useMemo(() => new Vector3(), []);
 
   const sharedUniforms = useMemo(() => {
     return {
@@ -396,7 +403,7 @@ function CoreParticle() {
     sharedUniforms.time.value = time;
     
     const targetHover = hoveredSkill ? 1 : 0;
-    sharedUniforms.hoverState.value = THREE.MathUtils.lerp(
+    sharedUniforms.hoverState.value = MathUtils.lerp(
       sharedUniforms.hoverState.value,
       targetHover,
       0.1
@@ -419,13 +426,15 @@ function CoreParticle() {
       
       const pulse = Math.sin(time * freq);
       const scale = 1 + pulse * amp; 
-      sunRef.current.scale.lerp(new THREE.Vector3(scale, scale, scale), 0.2);
+      sunScaleVec.set(scale, scale, scale);
+      sunRef.current.scale.lerp(sunScaleVec, 0.2);
     }
 
     if (coronaRef.current) {
        coronaRef.current.rotation.y += 0.002 + currentHover * 0.01;
        const coronaScale = 1 + Math.sin(time * 2.0) * 0.03 + currentHover * 0.15;
-       coronaRef.current.scale.lerp(new THREE.Vector3(coronaScale, coronaScale, coronaScale), 0.2);
+       coronaScaleVec.set(coronaScale, coronaScale, coronaScale);
+       coronaRef.current.scale.lerp(coronaScaleVec, 0.2);
     }
   });
 
@@ -453,7 +462,7 @@ function CoreParticle() {
           fragmentShader={coronaFragmentShader}
           transparent
           depthWrite={false}
-          blending={THREE.AdditiveBlending}
+          blending={AdditiveBlending}
         />
       </mesh>
     </group>
@@ -461,10 +470,10 @@ function CoreParticle() {
 }
 
 function CelestialCloud({ radius = 15, words }: { radius?: number; words: string[] }) {
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
   
   const wordPositions = useMemo(() => {
-    const temp: Record<string, THREE.Vector3> = {};
+    const temp: Record<string, Vector3> = {};
     const count = words.length;
     const phi = Math.PI * (3 - Math.sqrt(5)); 
     
@@ -477,7 +486,7 @@ function CelestialCloud({ radius = 15, words }: { radius?: number; words: string
         const x = Math.cos(theta) * r;
         const z = Math.sin(theta) * r;
         
-        temp[words[i]] = new THREE.Vector3(x * radius, y * radius, z * radius);
+        temp[words[i]] = new Vector3(x * radius, y * radius, z * radius);
     }
     return temp;
   }, [words, radius]);
@@ -509,7 +518,7 @@ export function CelestialSkillCore({ words }: { words: string[] }) {
   return (
     <>
       <CelestialCloud radius={15} words={words} />
-      <EffectComposer disableNormalPass>
+      <EffectComposer enableNormalPass={false}>
         <Bloom luminanceThreshold={0.4} luminanceSmoothing={0.9} intensity={1.5} mipmapBlur />
       </EffectComposer>
     </>

@@ -4,6 +4,10 @@ import { motion, AnimatePresence } from "motion/react";
 import { X, Maximize2, Star, FileText, ArrowRight, Github } from "lucide-react";
 import { Project } from "../data";
 import { audioManager } from "../lib/audio";
+import {
+  getPrimaryProjectAction,
+  getSourceProjectAction,
+} from "../lib/projectActions";
 
 const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
 
@@ -233,6 +237,8 @@ export function DossierContent({
   dragHandler,
 }: DossierContentProps) {
   const [isMediaExpanded, setIsMediaExpanded] = useState(false);
+  const sourceAction = getSourceProjectAction(project);
+  const primaryAction = getPrimaryProjectAction(project);
 
   return (
     <>
@@ -484,35 +490,68 @@ export function DossierContent({
       </div>
 
       <div className="p-5 pt-0 flex items-center justify-between gap-3 mt-1 relative z-10 mt-4 shrink-0 before:absolute before:inset-x-5 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-[var(--hologram-core)] before:to-transparent before:opacity-30">
-        <a
-          href={project.github || "https://github.com"}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 max-w-[160px] flex items-center justify-center gap-2 py-2.5 px-4 rounded-sm bg-[#020617]/40 border text-slate-300 hover:text-white transition-all font-mono text-[9px] tracking-[0.2em] uppercase font-medium backdrop-blur-md hover:bg-white/5"
-          style={{
-            borderColor:
-              "color-mix(in srgb, var(--hologram-core) 40%, transparent)",
-          }}
-          onPointerEnter={() => audioManager.playBleep(1200, 0.03, 0.02)}
-          onClick={() => audioManager.playBleep(900, 0.05, 0.05)}
-        >
-          <Github size={12} />
-          <span>SOURCE CODE</span>
-        </a>
-        <button
-          className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-sm bg-[#020617]/60 border transition-all font-mono text-[9px] tracking-[0.2em] uppercase font-bold backdrop-blur-md group relative overflow-hidden"
-          style={{
-            borderColor: "var(--hologram-core)",
-            color: "color-mix(in srgb, var(--hologram-core) 80%, white 20%)",
-            boxShadow: `0 0 15px -2px color-mix(in srgb, var(--hologram-core) 40%, transparent), inset 0 0 12px -2px color-mix(in srgb, var(--hologram-core) 30%, transparent)`,
-          }}
-          onPointerEnter={() => audioManager.playBleep(1400, 0.03, 0.02)}
-          onClick={() => audioManager.playScan()}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
-          <span>VIEW PROJECT</span>
-          <ArrowRight size={12} />
-        </button>
+        {!sourceAction.disabled ? (
+          <a
+            href={sourceAction.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 max-w-[160px] flex items-center justify-center gap-2 py-2.5 px-4 rounded-sm bg-[#020617]/40 border text-slate-300 hover:text-white transition-all font-mono text-[9px] tracking-[0.2em] uppercase font-medium backdrop-blur-md hover:bg-white/5"
+            style={{
+              borderColor:
+                "color-mix(in srgb, var(--hologram-core) 40%, transparent)",
+            }}
+            onPointerEnter={() => audioManager.playBleep(1200, 0.03, 0.02)}
+            onClick={() => audioManager.playBleep(900, 0.05, 0.05)}
+          >
+            <Github size={12} />
+            <span>{sourceAction.label}</span>
+          </a>
+        ) : (
+          <button
+            type="button"
+            disabled
+            className="flex-1 max-w-[160px] flex items-center justify-center gap-2 py-2.5 px-4 rounded-sm bg-[#020617]/30 border text-slate-500 transition-all font-mono text-[9px] tracking-[0.2em] uppercase font-medium backdrop-blur-md cursor-not-allowed"
+            style={{
+              borderColor:
+                "color-mix(in srgb, var(--hologram-core) 20%, transparent)",
+            }}
+          >
+            <Github size={12} />
+            <span>{sourceAction.label}</span>
+          </button>
+        )}
+        {!primaryAction.disabled ? (
+          <a
+            href={primaryAction.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-sm bg-[#020617]/60 border transition-all font-mono text-[9px] tracking-[0.2em] uppercase font-bold backdrop-blur-md group relative overflow-hidden"
+            style={{
+              borderColor: "var(--hologram-core)",
+              color: "color-mix(in srgb, var(--hologram-core) 80%, white 20%)",
+              boxShadow: `0 0 15px -2px color-mix(in srgb, var(--hologram-core) 40%, transparent), inset 0 0 12px -2px color-mix(in srgb, var(--hologram-core) 30%, transparent)`,
+            }}
+            onPointerEnter={() => audioManager.playBleep(1400, 0.03, 0.02)}
+            onClick={() => audioManager.playScan()}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+            <span>{primaryAction.label}</span>
+            <ArrowRight size={12} />
+          </a>
+        ) : (
+          <button
+            type="button"
+            disabled
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-sm bg-[#020617]/30 border transition-all font-mono text-[9px] tracking-[0.2em] uppercase font-bold backdrop-blur-md text-slate-500 cursor-not-allowed"
+            style={{
+              borderColor:
+                "color-mix(in srgb, var(--hologram-core) 25%, transparent)",
+            }}
+          >
+            <span>{primaryAction.label}</span>
+            <ArrowRight size={12} />
+          </button>
+        )}
       </div>
 
       {typeof document !== "undefined" && createPortal(

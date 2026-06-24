@@ -1,22 +1,22 @@
 
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef, useMemo } from "react";
-import * as THREE from "three";
+import { AdditiveBlending, InstancedMesh, MeshBasicMaterial, Object3D, Vector3 } from 'three';
 import { useAppStore } from "../store";
 
-const tempCamDir = new THREE.Vector3();
-const tempRight = new THREE.Vector3();
-const tempUp = new THREE.Vector3();
-const zAxis = new THREE.Vector3(0, 0, 1);
-const tempOffset = new THREE.Vector3();
-const tempNegDir = new THREE.Vector3();
+const tempCamDir = new Vector3();
+const tempRight = new Vector3();
+const tempUp = new Vector3();
+const zAxis = new Vector3(0, 0, 1);
+const tempOffset = new Vector3();
+const tempNegDir = new Vector3();
 
 export function WarpLines() {
-  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const meshRef = useRef<InstancedMesh>(null);
   const { camera } = useThree();
 
   const count = 400;
-  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const dummy = useMemo(() => new Object3D(), []);
 
   const particles = useMemo(() => {
     const temp = [];
@@ -30,7 +30,7 @@ export function WarpLines() {
       const z = radius * Math.cos(phi);
 
       temp.push({
-        pos: new THREE.Vector3(x, y, z),
+        pos: new Vector3(x, y, z),
         speed: Math.random() * 150 + 100,
       });
     }
@@ -81,7 +81,7 @@ export function WarpLines() {
       meshRef.current.setMatrixAt(i, dummy.matrix);
     }
     meshRef.current.instanceMatrix.needsUpdate = true;
-    (meshRef.current.material as THREE.MeshBasicMaterial).opacity =
+    (meshRef.current.material as MeshBasicMaterial).opacity =
       intensity * 0.9;
   });
 
@@ -97,7 +97,7 @@ export function WarpLines() {
         transparent
         opacity={0}
         depthWrite={false}
-        blending={THREE.AdditiveBlending}
+        blending={AdditiveBlending}
       />
     </instancedMesh>
   );

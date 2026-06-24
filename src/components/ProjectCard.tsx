@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, useMotionTemplate, useMotionValue } from "motion/react";
 import { ExternalLink, Calendar, CircleDot, Cpu } from "lucide-react";
 import type { Project } from "../data";
@@ -16,22 +16,34 @@ export function ProjectCard({ project, index, onClick }: ProjectCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isGlitching, setIsGlitching] = useState(false);
   const [isClickedGlitch, setIsClickedGlitch] = useState(false);
+  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  const scheduleTimeout = (callback: () => void, delay: number) => {
+    const timeout = setTimeout(() => {
+      timeoutsRef.current = timeoutsRef.current.filter((item) => item !== timeout);
+      callback();
+    }, delay);
+    timeoutsRef.current.push(timeout);
+    return timeout;
+  };
 
   useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout>;
     const triggerGlitch = () => {
       const waitTime = 5000 + Math.random() * 5000;
-      timeout = setTimeout(() => {
+      scheduleTimeout(() => {
         if (Math.random() > 0.5) {
           setIsGlitching(true);
 
-          setTimeout(() => setIsGlitching(false), 200 + Math.random() * 400);
+          scheduleTimeout(() => setIsGlitching(false), 200 + Math.random() * 400);
         }
         triggerGlitch();
       }, waitTime);
     };
     triggerGlitch();
-    return () => clearTimeout(timeout);
+    return () => {
+      timeoutsRef.current.forEach((timeout) => clearTimeout(timeout));
+      timeoutsRef.current = [];
+    };
   }, []);
 
   function handleMouseMove({
@@ -48,9 +60,9 @@ export function ProjectCard({ project, index, onClick }: ProjectCardProps) {
     setIsClickedGlitch(true);
     audioManager.playScan();
 
-    setTimeout(() => {
+    scheduleTimeout(() => {
       onClick?.();
-      setTimeout(() => setIsClickedGlitch(false), 1000);
+      scheduleTimeout(() => setIsClickedGlitch(false), 1000);
     }, 200);
   };
 

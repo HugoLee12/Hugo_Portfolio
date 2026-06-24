@@ -1,7 +1,7 @@
 
 import { useFrame } from "@react-three/fiber";
-import { useRef, useMemo } from "react";
-import * as THREE from "three";
+import { useEffect, useRef, useMemo } from "react";
+import { AdditiveBlending, Color, DoubleSide, FrontSide, Group, Mesh } from 'three';
 import { LensingBubble } from "./LensingBubble";
 import { useAppStore } from "../store";
 import {
@@ -18,16 +18,16 @@ export function BlackHole({
   onClick?: () => void;
   selectedId?: string | null;
 }) {
-  const diskRef = useRef<THREE.Mesh>(null);
-  const lensingRef = useRef<THREE.Mesh>(null);
-  const blackHoleGroupRef = useRef<THREE.Group>(null!);
+  const diskRef = useRef<Mesh>(null);
+  const lensingRef = useRef<Mesh>(null);
+  const blackHoleGroupRef = useRef<Group>(null!);
 
   const uniforms = useMemo(
     () => ({
       uTime: { value: 0 },
-      uColorInner: { value: new THREE.Color("#ccffff") },
-      uColorMid: { value: new THREE.Color("#0055ff") },
-      uColorOuter: { value: new THREE.Color("#6b21a8") },
+      uColorInner: { value: new Color("#ccffff") },
+      uColorMid: { value: new Color("#0055ff") },
+      uColorOuter: { value: new Color("#6b21a8") },
     }),
     [],
   );
@@ -46,6 +46,12 @@ export function BlackHole({
       diskRef.current.rotation.y = tiltY;
     }
   });
+
+  useEffect(() => {
+    return () => {
+      document.body.style.cursor = "";
+    };
+  }, []);
 
   return (
     <group
@@ -66,7 +72,7 @@ export function BlackHole({
       onPointerOut={(e) => {
         if (onClick) {
           e.stopPropagation();
-          document.body.style.cursor = "auto";
+          document.body.style.cursor = "";
         }
       }}
     >
@@ -85,9 +91,9 @@ export function BlackHole({
             vertexShader={accretionDiskVertexShader}
             fragmentShader={accretionDiskFragmentShader}
             transparent={true}
-            blending={THREE.AdditiveBlending}
+            blending={AdditiveBlending}
             depthWrite={false}
-            side={THREE.DoubleSide}
+            side={DoubleSide}
           />
         </mesh>
 
@@ -98,9 +104,9 @@ export function BlackHole({
             vertexShader={lensingVertexShader}
             fragmentShader={lensingFragmentShader}
             transparent={true}
-            blending={THREE.AdditiveBlending}
+            blending={AdditiveBlending}
             depthWrite={false}
-            side={THREE.FrontSide}
+            side={FrontSide}
           />
         </mesh>
       </group>

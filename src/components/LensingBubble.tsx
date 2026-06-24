@@ -1,7 +1,10 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useFBO } from "@react-three/drei";
 import { useRef, useMemo } from "react";
-import * as THREE from "three";
+import { Group, Mesh, ShaderMaterial } from 'three';
+
+const LENSING_FBO_SIZE = 512;
+const LENSING_UPDATE_INTERVAL = 2;
 
 const vertexShader = `
 varying vec4 vScreenPos;
@@ -51,12 +54,13 @@ void main() {
 export function LensingBubble({
   blackHoleRef,
 }: {
-  blackHoleRef?: React.RefObject<THREE.Group>;
+  blackHoleRef?: React.RefObject<Group>;
 }) {
-  const meshRef = useRef<THREE.Mesh>(null!);
-  const materialRef = useRef<THREE.ShaderMaterial>(null!);
+  const meshRef = useRef<Mesh>(null!);
+  const materialRef = useRef<ShaderMaterial>(null!);
+  const frameCount = useRef(0);
 
-  const fbo = useFBO(1024, 1024);
+  const fbo = useFBO(LENSING_FBO_SIZE, LENSING_FBO_SIZE);
 
   const uniforms = useMemo(
     () => ({
@@ -66,6 +70,15 @@ export function LensingBubble({
   );
 
   useFrame((state) => {
+    frameCount.current += 1;
+    const hasTexture = Boolean(materialRef.current?.uniforms.tDiffuse.value);
+    const shouldRefreshTexture =
+      frameCount.current % LENSING_UPDATE_INTERVAL === 1 || !hasTexture;
+
+    if (!shouldRefreshTexture) {
+      return;
+    }
+
     meshRef.current.visible = false;
 
     let previousVisible = true;

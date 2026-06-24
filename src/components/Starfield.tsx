@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useEffect } from 'react';
-import * as THREE from 'three';
+import { AdditiveBlending, Group, MathUtils, Points, ShaderMaterial, Uniform, Vector2, Vector3, WebGLRenderer, WebGLRenderTarget } from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
 import { PerspectiveCamera } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
@@ -29,7 +29,7 @@ const CONFIG = {
 
 const hexToVec3 = (hex: string) => {
   const n = parseInt(hex.slice(1), 16);
-  return new THREE.Vector3(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
+  return new Vector3(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
 };
 
 const vertexShader = `
@@ -104,16 +104,16 @@ class FlameBackgroundEffectImpl extends Effect {
       }
     `, {
       uniforms: new Map([
-        ['iTime', new THREE.Uniform(0)],
-        ['uBg', new THREE.Uniform(hexToVec3(CONFIG.bgColor))],
-        ['uFlameA', new THREE.Uniform(hexToVec3(CONFIG.flameColor))],
-        ['uFlameB', new THREE.Uniform(hexToVec3(CONFIG.flameColor2))],
-        ['uFlameAmt', new THREE.Uniform(CONFIG.flameAmt)],
-      ] as [string, THREE.Uniform][])
+        ['iTime', new Uniform(0)],
+        ['uBg', new Uniform(hexToVec3(CONFIG.bgColor))],
+        ['uFlameA', new Uniform(hexToVec3(CONFIG.flameColor))],
+        ['uFlameB', new Uniform(hexToVec3(CONFIG.flameColor2))],
+        ['uFlameAmt', new Uniform(CONFIG.flameAmt)],
+      ] as [string, Uniform][])
     });
   }
 
-  update(renderer: THREE.WebGLRenderer, inputBuffer: THREE.WebGLRenderTarget, deltaTime: number) {
+  update(renderer: WebGLRenderer, inputBuffer: WebGLRenderTarget, deltaTime: number) {
     const time = this.uniforms.get('iTime');
     if (time) {
       time.value += deltaTime;
@@ -128,9 +128,9 @@ const FlameBackgroundEffect = React.forwardRef((props, ref) => {
 });
 
 export function Starfield() {
-  const pointsRef = useRef<THREE.Points>(null);
-  const groupRef = useRef<THREE.Group>(null);
-  const materialRef = useRef<THREE.ShaderMaterial>(null);
+  const pointsRef = useRef<Points>(null);
+  const groupRef = useRef<Group>(null);
+  const materialRef = useRef<ShaderMaterial>(null);
   const { camera, pointer, raycaster } = useThree();
 
   const count = 4200;
@@ -163,7 +163,7 @@ export function Starfield() {
     uDrift: { value: 0 },
     uDepth: { value: depth },
     uTwinkle: { value: CONFIG.twinkle },
-    uCursor: { value: new THREE.Vector3() },
+    uCursor: { value: new Vector3() },
     uRepelRadius: { value: CONFIG.repelRadius },
     uRepelStrength: { value: CONFIG.repelStrength },
     uActivity: { value: 0 },
@@ -174,7 +174,7 @@ export function Starfield() {
   }), []);
 
   const stateRef = useRef({
-      mouseSmooth: new THREE.Vector2(),
+      mouseSmooth: new Vector2(),
       scrollSmooth: 0,
       scrollCurrent: 0,
       scrollCurrentTarget: 0,
@@ -182,7 +182,7 @@ export function Starfield() {
       appearTime: 0,
   });
 
-  const worldTarget = useRef(new THREE.Vector3());
+  const worldTarget = useRef(new Vector3());
 
   const scrollMax = useRef(0);
 
@@ -222,8 +222,8 @@ export function Starfield() {
 
     // Scroll smoothing
     const targetScroll = stateRef.current.scrollCurrentTarget || 0;
-    stateRef.current.scrollSmooth = THREE.MathUtils.lerp(stateRef.current.scrollSmooth, targetScroll, 0.10);
-    stateRef.current.scrollCurrent = THREE.MathUtils.lerp(stateRef.current.scrollCurrent, stateRef.current.scrollSmooth, 0.06);
+    stateRef.current.scrollSmooth = MathUtils.lerp(stateRef.current.scrollSmooth, targetScroll, 0.10);
+    stateRef.current.scrollCurrent = MathUtils.lerp(stateRef.current.scrollCurrent, stateRef.current.scrollSmooth, 0.06);
 
     // Update drift
     if (materialRef.current) {
@@ -251,9 +251,9 @@ export function Starfield() {
         raycaster.setFromCamera(pointer, camera);
         raycaster.ray.at(5, worldTarget.current);
         materialRef.current.uniforms.uCursor.value.lerp(worldTarget.current, 0.1);
-        materialRef.current.uniforms.uActivity.value = THREE.MathUtils.lerp(materialRef.current.uniforms.uActivity.value, 1, 0.05);
+        materialRef.current.uniforms.uActivity.value = MathUtils.lerp(materialRef.current.uniforms.uActivity.value, 1, 0.05);
     } else if (materialRef.current) {
-        materialRef.current.uniforms.uActivity.value = THREE.MathUtils.lerp(materialRef.current.uniforms.uActivity.value, 0, 0.05);
+        materialRef.current.uniforms.uActivity.value = MathUtils.lerp(materialRef.current.uniforms.uActivity.value, 0, 0.05);
     }
 
   });
@@ -280,7 +280,7 @@ export function Starfield() {
             uniforms={uniforms}
             transparent={true}
             depthWrite={false}
-            blending={THREE.AdditiveBlending}
+            blending={AdditiveBlending}
           />
         </points>
       </group>

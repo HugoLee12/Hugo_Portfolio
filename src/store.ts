@@ -9,7 +9,7 @@ interface AppState {
   setWarpRatio: (ratio: number) => void;
 }
 
-let hoverTimeout: any = null;
+let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
 
 export const useAppStore = create<AppState>((set, get) => ({
   hoveredId: null,
@@ -20,6 +20,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (get().hoveredSkill !== skill) {
       hoverTimeout = setTimeout(() => {
         set({ hoveredSkill: skill });
+        hoverTimeout = null;
       }, 50);
     }
   },

@@ -1,14 +1,14 @@
 
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef, useEffect, useLayoutEffect } from "react";
-import * as THREE from "three";
+import { MathUtils, PerspectiveCamera, Vector3 } from 'three';
 import { audioManager } from "../lib/audio";
 import { useAppStore } from "../store";
 
-const tempOrigin = new THREE.Vector3(0, 0, 0);
-const tempPlanetPos = new THREE.Vector3();
-const tempDir = new THREE.Vector3();
-const tempCameraPos = new THREE.Vector3();
+const tempOrigin = new Vector3(0, 0, 0);
+const tempPlanetPos = new Vector3();
+const tempDir = new Vector3();
+const tempCameraPos = new Vector3();
 
 export function CameraManager({
   selectedId,
@@ -81,20 +81,20 @@ export function CameraManager({
         const ease = Math.min(1, (transitionTime.current - 1.0) * 1.5);
 
         const targetFov = 45 + ease * 120;
-        const currentFov = (camera as THREE.PerspectiveCamera).fov;
+        const currentFov = (camera as PerspectiveCamera).fov;
         // Apply target FOV
         if (Math.abs(currentFov - targetFov) > 0.1) {
-          (camera as THREE.PerspectiveCamera).fov = THREE.MathUtils.damp(
+          (camera as PerspectiveCamera).fov = MathUtils.damp(
             currentFov,
             targetFov,
             20,
             delta,
           );
-          (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
+          (camera as PerspectiveCamera).updateProjectionMatrix();
         }
 
         const currentDistance = camera.position.length();
-        const newDistance = THREE.MathUtils.damp(
+        const newDistance = MathUtils.damp(
           currentDistance,
           0.1,
           4 + ease * 8,
@@ -114,15 +114,15 @@ export function CameraManager({
     }
 
     const targetFov = 45 + warpRatio * 35;
-    const currentFov = (camera as THREE.PerspectiveCamera).fov;
+    const currentFov = (camera as PerspectiveCamera).fov;
     if (Math.abs(currentFov - targetFov) > 0.1) {
-      (camera as THREE.PerspectiveCamera).fov = THREE.MathUtils.damp(
+      (camera as PerspectiveCamera).fov = MathUtils.damp(
         currentFov,
         targetFov,
         12,
         delta,
       );
-      (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
+      (camera as PerspectiveCamera).updateProjectionMatrix();
     }
 
     if (isIntro) {
@@ -130,7 +130,7 @@ export function CameraManager({
 
       const desiredDistance = 30;
       const currentDistance = camera.position.distanceTo(orbit.target);
-      const newDistance = THREE.MathUtils.damp(
+      const newDistance = MathUtils.damp(
         currentDistance,
         desiredDistance,
         1.2,
@@ -153,7 +153,7 @@ export function CameraManager({
             const currentDistance = camera.position.distanceTo(orbit.target);
             if (Math.abs(currentDistance - desiredDistance) > 0.05) {
               const dampFactor = warpRatio > 0.1 ? 8 : 5;
-              const newDistance = THREE.MathUtils.damp(
+              const newDistance = MathUtils.damp(
                 currentDistance,
                 desiredDistance,
                 dampFactor,
@@ -174,7 +174,7 @@ export function CameraManager({
           const currentDistance = camera.position.distanceTo(orbit.target);
           if (Math.abs(currentDistance - desiredDistance) > 0.05) {
             const dampFactor = warpRatio > 0.1 ? 8 : 3;
-            const newDistance = THREE.MathUtils.damp(
+            const newDistance = MathUtils.damp(
               currentDistance,
               desiredDistance,
               dampFactor,

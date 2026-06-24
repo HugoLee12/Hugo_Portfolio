@@ -32,14 +32,16 @@ export function DossierOverlay({ project, onClose }: DossierOverlayProps) {
   const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-6deg", "6deg"]);
 
   useEffect(() => {
-    let animationFrameId: number;
+    let animationFrameId: number | null = null;
     const handleMouseMove = (e: MouseEvent) => {
       if (isMobile) return;
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
       animationFrameId = requestAnimationFrame(() => {
         const xPct = e.clientX / window.innerWidth - 0.5;
         const yPct = e.clientY / window.innerHeight - 0.5;
         x.set(xPct);
         y.set(yPct);
+        animationFrameId = null;
       });
     };
 
