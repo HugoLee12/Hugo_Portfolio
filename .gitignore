@@ -12,3 +12,5 @@ test-results/
 AGENTS.md
 graphify-out/
 docs/
+
+.vercel
