@@ -22,6 +22,18 @@ body,
   color: #f8fafc;
 }
 
+html,
+body {
+  overflow-x: clip;
+}
+
+@supports not (overflow: clip) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+}
+
 .pulse-glow {
   animation: pulse-glow-anim 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

@@ -9,6 +9,7 @@ export interface Project {
   status: "ACTIVE" | "ARCHIVED" | "IN PROGRESS";
   techStack: string[];
   image?: string;
+  images?: string[];
   orbitRadius: number;
   orbitSpeed: number;
   startAngle: number;
@@ -24,18 +25,19 @@ export const projects: Project[] = [
     name: "AI Press",
     category: "CMS & DIGITAL PUBLISHING",
     description:
-      "AI Press is a CMS and digital publishing management system with article management, user authorization, dashboard workflows, and e-kiosk features. I worked as a Full-stack Developer, building React, TypeScript, Vite, and Tailwind CSS frontend modules while contributing to ASP.NET Core Web API backend features with Entity Framework Core, SQL Server, JWT authentication, and role/permission-based authorization.",
+      "AI Press is a faculty-led CMS and digital publishing project for managing articles, editorial workflows, and e-kiosk content. I contributed as a full-stack developer, building React/TypeScript interfaces and supporting ASP.NET Core API features backed by SQL Server.",
     role: "Full-stack Developer",
     duration: "03/2026 - Present",
     stardate: "2026.03",
     status: "ACTIVE",
-    techStack: ["React", "TypeScript", "Vite", "Tailwind CSS", "ASP.NET Core Web API", "Entity Framework Core", "SQL Server", "JWT", "Role/Permission Authorization"],
+    techStack: ["React", "TypeScript", "Vite", "Tailwind CSS", "ASP.NET Core Web API", "Entity Framework Core", "SQL Server"],
     orbitRadius: 4.2,
     orbitSpeed: 0.14,
     startAngle: Math.PI / 4,
     color: "#34d399",
     size: 0.3,
-    github: "https://github.com/HugoLee12",
+    image: "/project_pic/AIPress/Screenshot%202026-06-24%20213353.png",
+    images: ["/project_pic/AIPress/Screenshot%202026-06-24%20213353.png"],
   },
   {
     id: "hugo-portfolio",
@@ -54,6 +56,12 @@ export const projects: Project[] = [
     color: "#60a5fa",
     size: 0.34,
     github: "https://github.com/HugoLee12/Hugo_Portfolio",
+    image:
+      "/project_pic/Hugo_Portfolio/Screenshot%202026-06-24%20212345.png",
+    images: [
+      "/project_pic/Hugo_Portfolio/Screenshot%202026-06-24%20212345.png",
+      "/project_pic/Hugo_Portfolio/Screenshot%202026-06-24%20212620.png",
+    ],
   },
   {
     id: "reserved-dossier-01",

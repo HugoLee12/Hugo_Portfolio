@@ -41,9 +41,9 @@ assert.deepEqual(getPrimaryProjectAction(projectWithDemo), {
 });
 
 assert.deepEqual(getPrimaryProjectAction(projectWithSourceOnly), {
-  label: "VIEW SOURCE",
-  href: "https://github.com/HugoLee12/source-only",
-  disabled: false,
+  label: "LOCKED",
+  href: undefined,
+  disabled: true,
 });
 
 assert.deepEqual(getPrimaryProjectAction(reservedProject), {

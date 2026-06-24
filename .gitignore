@@ -11,6 +11,6 @@ test-results/
 .codex
 AGENTS.md
 graphify-out/
-docs/
-
+.agents/
 .vercel
+docs/

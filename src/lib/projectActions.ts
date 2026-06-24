@@ -4,7 +4,7 @@ interface ProjectActionInput {
 }
 
 export interface ProjectAction {
-  label: "SOURCE CODE" | "NO SOURCE" | "VIEW PROJECT" | "VIEW SOURCE" | "LOCKED";
+  label: "SOURCE CODE" | "NO SOURCE" | "VIEW PROJECT" | "LOCKED";
   href?: string;
   disabled: boolean;
 }
@@ -30,14 +30,6 @@ export function getPrimaryProjectAction(project: ProjectActionInput): ProjectAct
     return {
       label: "VIEW PROJECT",
       href: project.demo,
-      disabled: false,
-    };
-  }
-
-  if (project.github) {
-    return {
-      label: "VIEW SOURCE",
-      href: project.github,
       disabled: false,
     };
   }

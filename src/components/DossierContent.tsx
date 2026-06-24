@@ -1,7 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Maximize2, Star, FileText, ArrowRight, Github } from "lucide-react";
+import {
+  X,
+  Maximize2,
+  Star,
+  FileText,
+  ArrowRight,
+  Github,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Project } from "../data";
 import { audioManager } from "../lib/audio";
 import {
@@ -237,8 +246,44 @@ export function DossierContent({
   dragHandler,
 }: DossierContentProps) {
   const [isMediaExpanded, setIsMediaExpanded] = useState(false);
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const sourceAction = getSourceProjectAction(project);
   const primaryAction = getPrimaryProjectAction(project);
+  const isSourceOnlyAction = !sourceAction.disabled && primaryAction.disabled;
+  const mediaImages = useMemo(
+    () =>
+      project.images?.length
+        ? project.images
+        : project.image
+          ? [project.image]
+          : [],
+    [project.image, project.images],
+  );
+  const currentMediaImage = mediaImages[currentMediaIndex] ?? mediaImages[0];
+
+  useEffect(() => {
+    setCurrentMediaIndex(0);
+    setIsMediaExpanded(false);
+  }, [project.id]);
+
+  useEffect(() => {
+    if (isMediaExpanded || mediaImages.length <= 1) return;
+
+    const interval = window.setInterval(() => {
+      setCurrentMediaIndex((index) => (index + 1) % mediaImages.length);
+    }, 5000);
+
+    return () => window.clearInterval(interval);
+  }, [isMediaExpanded, mediaImages.length, project.id]);
+
+  const goToMedia = (direction: -1 | 1) => {
+    if (mediaImages.length <= 1) return;
+
+    audioManager.playBleep(1100, 0.03, 0.02);
+    setCurrentMediaIndex(
+      (index) => (index + direction + mediaImages.length) % mediaImages.length,
+    );
+  };
 
   return (
     <>
@@ -379,7 +424,7 @@ export function DossierContent({
           </div>
         </HoverRipple>
 
-        {project.image && (
+        {currentMediaImage && (
           <HoverRipple className="relative" radius={200}>
             <div
               className="absolute -top-3 left-0 w-8 h-[1px]"
@@ -399,6 +444,7 @@ export function DossierContent({
             />
 
             <div
+              data-testid="dossier-media-frame"
               className="relative w-full aspect-[21/9] shrink-0 rounded-sm overflow-hidden group cursor-pointer border"
               style={{
                 borderColor:
@@ -411,8 +457,9 @@ export function DossierContent({
               onPointerEnter={() => audioManager.playBleep(1000, 0.04, 0.02)}
             >
               <img
-                src={project.image}
-                alt={project.name}
+                data-testid="dossier-media-image"
+                src={currentMediaImage}
+                alt={`${project.name} preview ${currentMediaIndex + 1}`}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 mix-blend-luminosity hover:mix-blend-normal"
               />
               <div
@@ -431,6 +478,68 @@ export function DossierContent({
                   <span>VIEW MEDIA</span>
                 </div>
               </div>
+              {mediaImages.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    aria-label={`Previous ${project.name} preview`}
+                    data-testid="dossier-media-prev"
+                    className="absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/65 text-white/80 backdrop-blur-md transition hover:border-white/30 hover:bg-slate-900/85 hover:text-white"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      goToMedia(-1);
+                    }}
+                    onPointerEnter={() => audioManager.playBleep(1200, 0.02, 0.02)}
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Next ${project.name} preview`}
+                    data-testid="dossier-media-next"
+                    className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/65 text-white/80 backdrop-blur-md transition hover:border-white/30 hover:bg-slate-900/85 hover:text-white"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      goToMedia(1);
+                    }}
+                    onPointerEnter={() => audioManager.playBleep(1200, 0.02, 0.02)}
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-1.5">
+                      {mediaImages.map((image, index) => (
+                        <button
+                          key={image}
+                          type="button"
+                          aria-label={`View ${project.name} preview ${index + 1}`}
+                          className="h-1.5 rounded-full transition-all"
+                          style={{
+                            width: index === currentMediaIndex ? "22px" : "6px",
+                            backgroundColor:
+                              index === currentMediaIndex
+                                ? "var(--hologram-core)"
+                                : "rgba(148, 163, 184, 0.45)",
+                            boxShadow:
+                              index === currentMediaIndex
+                                ? "0 0 10px var(--hologram-core)"
+                                : "none",
+                          }}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            audioManager.playBleep(1100, 0.03, 0.02);
+                            setCurrentMediaIndex(index);
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <span className="font-mono text-[8px] tracking-[0.2em] text-white/70">
+                      {String(currentMediaIndex + 1).padStart(2, "0")} /{" "}
+                      {String(mediaImages.length).padStart(2, "0")}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
 
             <div
@@ -489,7 +598,9 @@ export function DossierContent({
         </div>
       </div>
 
-      <div className="p-5 pt-0 flex items-center justify-between gap-3 mt-1 relative z-10 mt-4 shrink-0 before:absolute before:inset-x-5 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-[var(--hologram-core)] before:to-transparent before:opacity-30">
+      <div
+        className={`p-5 pt-0 flex items-center gap-3 mt-1 relative z-10 mt-4 shrink-0 before:absolute before:inset-x-5 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-[var(--hologram-core)] before:to-transparent before:opacity-30 ${isSourceOnlyAction ? "justify-center" : "justify-between"}`}
+      >
         {!sourceAction.disabled ? (
           <a
             href={sourceAction.href}
@@ -520,7 +631,7 @@ export function DossierContent({
             <span>{sourceAction.label}</span>
           </button>
         )}
-        {!primaryAction.disabled ? (
+        {isSourceOnlyAction ? null : !primaryAction.disabled ? (
           <a
             href={primaryAction.href}
             target="_blank"
@@ -556,8 +667,9 @@ export function DossierContent({
 
       {typeof document !== "undefined" && createPortal(
         <AnimatePresence>
-          {isMediaExpanded && project.image && (
+          {isMediaExpanded && currentMediaImage && (
             <motion.div
+              data-testid="dossier-media-expanded"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -574,13 +686,51 @@ export function DossierContent({
               >
                 <X size={24} />
               </button>
+              {mediaImages.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    aria-label={`Previous fullscreen ${project.name} preview`}
+                    data-testid="dossier-media-expanded-prev"
+                    className="absolute left-4 top-1/2 z-[110] flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/60 text-white/85 backdrop-blur-md transition hover:border-white/30 hover:bg-slate-900/85 hover:text-white md:left-8"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      goToMedia(-1);
+                    }}
+                    onPointerEnter={() => audioManager.playBleep(1200, 0.02, 0.02)}
+                  >
+                    <ChevronLeft size={22} />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Next fullscreen ${project.name} preview`}
+                    data-testid="dossier-media-expanded-next"
+                    className="absolute right-4 top-1/2 z-[110] flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/60 text-white/85 backdrop-blur-md transition hover:border-white/30 hover:bg-slate-900/85 hover:text-white md:right-8"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      goToMedia(1);
+                    }}
+                    onPointerEnter={() => audioManager.playBleep(1200, 0.02, 0.02)}
+                  >
+                    <ChevronRight size={22} />
+                  </button>
+                  <div
+                    data-testid="dossier-media-expanded-counter"
+                    className="absolute bottom-6 left-1/2 z-[110] -translate-x-1/2 rounded-full border border-white/10 bg-slate-950/60 px-4 py-2 font-mono text-[10px] tracking-[0.2em] text-white/75 backdrop-blur-md"
+                  >
+                    {String(currentMediaIndex + 1).padStart(2, "0")} /{" "}
+                    {String(mediaImages.length).padStart(2, "0")}
+                  </div>
+                </>
+              )}
               <motion.img
+                data-testid="dossier-media-expanded-image"
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                src={project.image}
-                alt={project.name}
+                src={currentMediaImage}
+                alt={`${project.name} preview ${currentMediaIndex + 1}`}
                 className="max-w-full max-h-full object-contain rounded-xl shadow-2xl border border-slate-700/50"
                 onClick={(e) => e.stopPropagation()}
               />
