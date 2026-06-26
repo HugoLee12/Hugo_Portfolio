@@ -25,9 +25,16 @@ type ContactValidationResult =
     };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const CONTACT_BODY_LIMIT_BYTES = 10 * 1024;
+
+class PayloadTooLargeError extends Error {}
 
 function readString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
+}
+
+export function sanitizeEmailSubjectValue(value: string): string {
+  return value.replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim();
 }
 
 function sendJson(
@@ -43,6 +50,9 @@ function sendJson(
 async function readBody(req: ContactRequest): Promise<unknown> {
   if (req.body) {
     if (typeof req.body === "string") {
+      if (Buffer.byteLength(req.body, "utf8") > CONTACT_BODY_LIMIT_BYTES) {
+        throw new PayloadTooLargeError();
+      }
       return JSON.parse(req.body);
     }
     return req.body;
@@ -50,7 +60,10 @@ async function readBody(req: ContactRequest): Promise<unknown> {
 
   let raw = "";
   for await (const chunk of req) {
-    raw += chunk;
+    raw += String(chunk);
+    if (Buffer.byteLength(raw, "utf8") > CONTACT_BODY_LIMIT_BYTES) {
+      throw new PayloadTooLargeError();
+    }
   }
   return raw ? JSON.parse(raw) : {};
 }
@@ -105,7 +118,11 @@ export default async function handler(req: ContactRequest, res: ServerResponse) 
   let payload: unknown;
   try {
     payload = await readBody(req);
-  } catch {
+  } catch (error) {
+    if (error instanceof PayloadTooLargeError) {
+      sendJson(res, 413, { ok: false, error: "Request payload is too large." });
+      return;
+    }
     sendJson(res, 400, { ok: false, error: "Invalid JSON payload." });
     return;
   }
@@ -133,13 +150,14 @@ export default async function handler(req: ContactRequest, res: ServerResponse) 
 
   const { name, email, message } = validation.data;
   const resend = new Resend(apiKey);
+  const subjectName = sanitizeEmailSubjectValue(name) || "Portfolio visitor";
 
   try {
     const { error } = await resend.emails.send({
       from: fromEmail,
       to: toEmail,
       replyTo: email,
-      subject: `Portfolio inquiry from ${name}`,
+      subject: `Portfolio inquiry from ${subjectName}`,
       text: [
         `Name: ${name}`,
         `Email: ${email}`,
@@ -149,22 +167,14 @@ export default async function handler(req: ContactRequest, res: ServerResponse) 
     });
 
     if (error) {
-      console.error("Resend contact email rejected", {
-        fromEmail,
-        toEmail,
-        error,
-      });
+      console.error("Resend contact email rejected", { error });
       sendJson(res, 502, { ok: false, error: "Message could not be sent." });
       return;
     }
 
     sendJson(res, 200, { ok: true });
-  } catch (error) {
-    console.error("Resend contact email failed", {
-      fromEmail,
-      toEmail,
-      error,
-    });
+  } catch {
+    console.error("Resend contact email failed");
     sendJson(res, 502, { ok: false, error: "Message could not be sent." });
   }
 }
