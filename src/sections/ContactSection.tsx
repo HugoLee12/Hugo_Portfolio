@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { profile } from '../data/profile';
+import { readContactResponse } from '../lib/contactResponse';
 import { validateContactPayload } from '../lib/contactValidation';
 
 type SubmitState = 'idle' | 'sending' | 'sent' | 'error';
@@ -38,7 +39,7 @@ export function ContactSection() {
         },
         body: JSON.stringify(validation.data),
       });
-      const result = (await response.json()) as { ok?: boolean; error?: string };
+      const result = await readContactResponse(response);
 
       if (!response.ok || !result.ok) {
         throw new Error(result.error || 'Message could not be sent.');
