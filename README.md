@@ -2,6 +2,8 @@
 
 Cinematic personal portfolio built with React, TypeScript, Vite, Tailwind CSS, React Three Fiber, Three.js, Motion, and Zustand.
 
+[View the live portfolio](https://hugo-portfolio-vert.vercel.app/)
+
 The site presents a recruiter-friendly developer profile with a dark technical visual system, animated WebGL scenes, and an immersive project showcase called **Black Hole Project Universe**. Instead of a traditional project grid, projects appear as orbiting nodes around a central black hole. Selecting a node opens a connected dossier with project details, media, and source/project actions.
 
 ## Highlights
