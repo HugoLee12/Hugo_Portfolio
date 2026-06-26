@@ -87,6 +87,20 @@ Because the portfolio relies heavily on WebGL, browser QA is important after vis
 
 The app is a Vite static frontend and is suitable for Vercel. Production output is generated in `dist/`.
 
+The contact form uses a Vercel Serverless Function plus Resend. Configure these environment variables in Vercel before testing real message delivery:
+
+- `RESEND_API_KEY`
+- `CONTACT_TO_EMAIL`
+- `CONTACT_FROM_EMAIL`
+
+For first Resend tests, `CONTACT_FROM_EMAIL` can use the sender Resend allows for the account. For production, use a verified sender domain.
+
+`npm.cmd run dev` runs the Vite frontend only. To exercise the serverless contact endpoint locally, run through Vercel's local runtime with the same env vars:
+
+```powershell
+npx.cmd vercel dev
+```
+
 ## Notes
 
 - React StrictMode is intentionally disabled because development double-mounting destabilized the R3F/postprocessing scenes in this project.
