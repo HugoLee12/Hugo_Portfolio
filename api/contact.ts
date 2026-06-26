@@ -149,12 +149,22 @@ export default async function handler(req: ContactRequest, res: ServerResponse) 
     });
 
     if (error) {
+      console.error("Resend contact email rejected", {
+        fromEmail,
+        toEmail,
+        error,
+      });
       sendJson(res, 502, { ok: false, error: "Message could not be sent." });
       return;
     }
 
     sendJson(res, 200, { ok: true });
-  } catch {
+  } catch (error) {
+    console.error("Resend contact email failed", {
+      fromEmail,
+      toEmail,
+      error,
+    });
     sendJson(res, 502, { ok: false, error: "Message could not be sent." });
   }
 }
