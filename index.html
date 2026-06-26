@@ -9,21 +9,6 @@
     />
     <meta name="theme-color" content="#020617" />
     <title>Hugo Lee | Full-Stack Developer Portfolio</title>
-    <script>
-      // Defensive patch: prevent libraries from crashing when attempting to polyfill fetch
-      // if it has been intercept-locked with a getter by the environment.
-      try {
-        var _desc = Object.getOwnPropertyDescriptor(window, 'fetch');
-        if (_desc && !_desc.set && _desc.configurable) {
-          Object.defineProperty(window, 'fetch', {
-            get: _desc.get,
-            set: function() { /* ignore reassignment */ },
-            configurable: true,
-            enumerable: _desc.enumerable
-          });
-        }
-      } catch (e) {}
-    </script>
   </head>
   <body>
     <div id="root"></div>
