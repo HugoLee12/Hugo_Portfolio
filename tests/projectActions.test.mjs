@@ -19,6 +19,11 @@ const projectWithSourceOnly = {
 
 const reservedProject = {
   name: "Reserved",
+  status: "RESERVED",
+};
+
+const archivedRealProject = {
+  name: "Archived Real Project",
   status: "ARCHIVED",
 };
 
@@ -41,13 +46,19 @@ assert.deepEqual(getPrimaryProjectAction(projectWithDemo), {
 });
 
 assert.deepEqual(getPrimaryProjectAction(projectWithSourceOnly), {
-  label: "LOCKED",
+  label: "NO PUBLIC DEMO",
   href: undefined,
   disabled: true,
 });
 
 assert.deepEqual(getPrimaryProjectAction(reservedProject), {
   label: "LOCKED",
+  href: undefined,
+  disabled: true,
+});
+
+assert.deepEqual(getPrimaryProjectAction(archivedRealProject), {
+  label: "NO PUBLIC DEMO",
   href: undefined,
   disabled: true,
 });

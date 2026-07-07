@@ -1,10 +1,11 @@
 interface ProjectActionInput {
   github?: string;
   demo?: string;
+  status?: string;
 }
 
 export interface ProjectAction {
-  label: "SOURCE CODE" | "NO SOURCE" | "VIEW PROJECT" | "LOCKED";
+  label: "SOURCE CODE" | "NO SOURCE" | "VIEW PROJECT" | "NO PUBLIC DEMO" | "LOCKED";
   href?: string;
   disabled: boolean;
 }
@@ -34,8 +35,10 @@ export function getPrimaryProjectAction(project: ProjectActionInput): ProjectAct
     };
   }
 
+  // LOCKED is reserved-node vocabulary; a real project without a public
+  // demo must not read like a placeholder.
   return {
-    label: "LOCKED",
+    label: project.status === "RESERVED" ? "LOCKED" : "NO PUBLIC DEMO",
     href: undefined,
     disabled: true,
   };

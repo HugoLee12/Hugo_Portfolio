@@ -6,7 +6,7 @@ export interface Project {
   role: string;
   duration: string;
   stardate: string;
-  status: "ACTIVE" | "ARCHIVED" | "IN PROGRESS";
+  status: "ACTIVE" | "ARCHIVED" | "IN PROGRESS" | "RESERVED";
   techStack: string[];
   image?: string;
   images?: string[];
@@ -72,7 +72,7 @@ export const projects: Project[] = [
     role: "Pending Dossier",
     duration: "Unassigned",
     stardate: "NO.DATA.01",
-    status: "ARCHIVED",
+    status: "RESERVED",
     techStack: ["No Data", "Reserved Orbit", "Future Project"],
     orbitRadius: 7.1,
     orbitSpeed: 0.065,
@@ -89,7 +89,7 @@ export const projects: Project[] = [
     role: "Locked Record",
     duration: "Unassigned",
     stardate: "NO.DATA.02",
-    status: "ARCHIVED",
+    status: "RESERVED",
     techStack: ["No Data", "Locked Signal", "Awaiting Evidence"],
     orbitRadius: 8.4,
     orbitSpeed: 0.05,
@@ -106,7 +106,7 @@ export const projects: Project[] = [
     role: "Deep Archive",
     duration: "Unassigned",
     stardate: "NO.DATA.03",
-    status: "ARCHIVED",
+    status: "RESERVED",
     techStack: ["No Data", "Deep Archive", "Verification Pending"],
     orbitRadius: 9.6,
     orbitSpeed: 0.038,
