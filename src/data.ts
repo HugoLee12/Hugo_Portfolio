@@ -36,8 +36,8 @@ export const projects: Project[] = [
     startAngle: Math.PI / 4,
     color: "#34d399",
     size: 0.3,
-    image: "/project_pic/AIPress/Screenshot%202026-06-24%20213353.png",
-    images: ["/project_pic/AIPress/Screenshot%202026-06-24%20213353.png"],
+    image: "/project_pic/AIPress/Screenshot%202026-06-24%20213353.webp",
+    images: ["/project_pic/AIPress/Screenshot%202026-06-24%20213353.webp"],
   },
   {
     id: "hugo-portfolio",
@@ -57,10 +57,10 @@ export const projects: Project[] = [
     size: 0.34,
     github: "https://github.com/HugoLee12/Hugo_Portfolio",
     image:
-      "/project_pic/Hugo_Portfolio/Screenshot%202026-06-24%20212345.png",
+      "/project_pic/Hugo_Portfolio/Screenshot%202026-06-24%20212345.webp",
     images: [
-      "/project_pic/Hugo_Portfolio/Screenshot%202026-06-24%20212345.png",
-      "/project_pic/Hugo_Portfolio/Screenshot%202026-06-24%20212620.png",
+      "/project_pic/Hugo_Portfolio/Screenshot%202026-06-24%20212345.webp",
+      "/project_pic/Hugo_Portfolio/Screenshot%202026-06-24%20212620.webp",
     ],
   },
   {

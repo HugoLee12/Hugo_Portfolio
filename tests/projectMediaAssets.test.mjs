@@ -1,15 +1,16 @@
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { existsSync, statSync } from "node:fs";
+import { dirname, extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { projects } from "../src/data.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const projectById = new Map(projects.map((project) => [project.id, project]));
+const DOSSIER_IMAGE_SIZE_BUDGET_BYTES = 100 * 1024;
 
-function publicPathExists(urlPath) {
+function resolvePublicPath(urlPath) {
   const decoded = decodeURIComponent(urlPath.replace(/^\//, ""));
-  return existsSync(resolve(__dirname, "../public", decoded));
+  return resolve(__dirname, "../public", decoded);
 }
 
 const aiPress = projectById.get("ai-press");
@@ -29,8 +30,15 @@ for (const project of [aiPress, hugoPortfolio]) {
   assert.equal(project.image, project.images?.[0], `${project.name} should use its first media item as the fallback image.`);
 
   for (const image of project.images ?? []) {
-    assert.ok(publicPathExists(image), `${project.name} media file should exist: ${image}`);
+    assert.equal(extname(image), ".webp", `${project.name} media file should be WebP: ${image}`);
+
+    const imagePath = resolvePublicPath(image);
+    assert.ok(existsSync(imagePath), `${project.name} media file should exist: ${image}`);
+    assert.ok(
+      statSync(imagePath).size <= DOSSIER_IMAGE_SIZE_BUDGET_BYTES,
+      `${project.name} media file should stay under ${DOSSIER_IMAGE_SIZE_BUDGET_BYTES} bytes: ${image}`,
+    );
   }
 }
 
-console.log("Project dossier media assets point to existing public files.");
+console.log("Project dossier media assets are WebP files under the size budget.");
