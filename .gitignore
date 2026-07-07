@@ -10,7 +10,9 @@ test-results/
 !.env.example
 .codex
 AGENTS.md
+CLAUDE.md
 graphify-out/
 .agents/
 .vercel
 docs/
+CONTEXT.md
