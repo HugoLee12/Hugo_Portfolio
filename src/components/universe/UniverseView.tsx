@@ -1,11 +1,11 @@
 import { useState, useEffect, Suspense } from "react";
-import { Canvas } from "@react-three/fiber";
 import { AnimatePresence } from "motion/react";
 import { projects } from "../../data";
 import { UniverseScene } from "../UniverseScene";
 import { DossierOverlay } from "../DossierOverlay";
 import { audioManager } from "../../lib/audio";
 import { InnerDimensionGallery } from "../InnerDimensionGallery";
+import { WebGLResilienceBoundary } from "../WebGLResilienceBoundary";
 
 interface UniverseViewProps {
   onExit: () => void;
@@ -84,7 +84,8 @@ export function UniverseView({ onExit }: UniverseViewProps) {
       <div
         className={`absolute inset-0 transition-opacity duration-1000 opacity-100`}
       >
-        <Canvas
+        <WebGLResilienceBoundary
+          label="Project Universe"
           camera={{ position: [0, 15, 20], fov: 45 }}
           dpr={UNIVERSE_CANVAS_DPR}
           gl={{ antialias: false, powerPreference: "high-performance" }}
@@ -105,7 +106,7 @@ export function UniverseView({ onExit }: UniverseViewProps) {
               }}
             />
           </Suspense>
-        </Canvas>
+        </WebGLResilienceBoundary>
       </div>
 
       <svg className="absolute inset-0 pointer-events-none z-20 w-full h-full hidden md:block">
