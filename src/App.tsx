@@ -2,6 +2,8 @@ import { lazy, Suspense, useState, useEffect } from "react";
 import { PortfolioLayout } from "./components/PortfolioLayout";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { AudioMuteToggle } from "./components/AudioMuteToggle";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 const loadUniverseView = () =>
   import("./components/universe/UniverseView").then((module) => ({
@@ -65,6 +67,8 @@ export default function App() {
         )}
       </AnimatePresence>
       <AudioMuteToggle />
+      <Analytics />
+      <SpeedInsights />
     </MotionConfig>
   );
 }
