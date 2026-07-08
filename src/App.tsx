@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState, useEffect } from "react";
 import { PortfolioLayout } from "./components/PortfolioLayout";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { AudioMuteToggle } from "./components/AudioMuteToggle";
 
 const loadUniverseView = () =>
@@ -40,7 +40,7 @@ export default function App() {
   }, [isUniverseActive]);
 
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       <PortfolioLayout
         isUniverseActive={isUniverseActive}
         onEnterUniverse={() => setIsUniverseActive(true)}
@@ -65,6 +65,6 @@ export default function App() {
         )}
       </AnimatePresence>
       <AudioMuteToggle />
-    </>
+    </MotionConfig>
   );
 }

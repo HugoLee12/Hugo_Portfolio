@@ -420,3 +420,13 @@ body {
 .hud-crosshair-br::before { content: ""; position: absolute; bottom: -5px; right: 0; width: 1px; height: 11px; background: rgba(52, 211, 153, 0.6); }
 .hud-crosshair-br::after { content: ""; position: absolute; bottom: 0; right: -5px; width: 11px; height: 1px; background: rgba(52, 211, 153, 0.6); }
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 12s !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+

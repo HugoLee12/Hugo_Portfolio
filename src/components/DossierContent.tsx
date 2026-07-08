@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import {
   X,
   Maximize2,
@@ -247,6 +247,7 @@ export function DossierContent({
 }: DossierContentProps) {
   const [isMediaExpanded, setIsMediaExpanded] = useState(false);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
   const sourceAction = getSourceProjectAction(project);
   const primaryAction = getPrimaryProjectAction(project);
   const isSourceOnlyAction = !sourceAction.disabled && primaryAction.disabled;
@@ -267,14 +268,14 @@ export function DossierContent({
   }, [project.id]);
 
   useEffect(() => {
-    if (isMediaExpanded || mediaImages.length <= 1) return;
+    if (prefersReducedMotion || isMediaExpanded || mediaImages.length <= 1) return;
 
     const interval = window.setInterval(() => {
       setCurrentMediaIndex((index) => (index + 1) % mediaImages.length);
     }, 5000);
 
     return () => window.clearInterval(interval);
-  }, [isMediaExpanded, mediaImages.length, project.id]);
+  }, [prefersReducedMotion, isMediaExpanded, mediaImages.length, project.id]);
 
   const goToMedia = (direction: -1 | 1) => {
     if (mediaImages.length <= 1) return;
