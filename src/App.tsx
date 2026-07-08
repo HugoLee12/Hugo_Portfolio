@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState, useEffect } from "react";
 import { PortfolioLayout } from "./components/PortfolioLayout";
 import { AnimatePresence, motion } from "motion/react";
+import { AudioMuteToggle } from "./components/AudioMuteToggle";
 
 const loadUniverseView = () =>
   import("./components/universe/UniverseView").then((module) => ({
@@ -63,6 +64,7 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
+      <AudioMuteToggle />
     </>
   );
 }
