@@ -1,6 +1,9 @@
 import { lazy, Suspense, useState, useEffect } from "react";
 import { PortfolioLayout } from "./components/PortfolioLayout";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, MotionConfig, motion } from "motion/react";
+import { AudioMuteToggle } from "./components/AudioMuteToggle";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 const loadUniverseView = () =>
   import("./components/universe/UniverseView").then((module) => ({
@@ -39,7 +42,7 @@ export default function App() {
   }, [isUniverseActive]);
 
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       <PortfolioLayout
         isUniverseActive={isUniverseActive}
         onEnterUniverse={() => setIsUniverseActive(true)}
@@ -63,6 +66,9 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+      <AudioMuteToggle />
+      <Analytics />
+      <SpeedInsights />
+    </MotionConfig>
   );
 }

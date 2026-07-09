@@ -19,9 +19,10 @@ assert.ok(
 );
 
 assert.ok(
-  dossierContent.includes("if (isMediaExpanded || mediaImages.length <= 1) return;") &&
-    dossierContent.includes("}, [isMediaExpanded, mediaImages.length, project.id]);"),
-  "DossierContent should pause auto-carousel while fullscreen media is open.",
+  dossierContent.includes("const prefersReducedMotion = useReducedMotion();") &&
+    dossierContent.includes("if (prefersReducedMotion || isMediaExpanded || mediaImages.length <= 1) return;") &&
+    dossierContent.includes("}, [prefersReducedMotion, isMediaExpanded, mediaImages.length, project.id]);"),
+  "DossierContent should pause auto-carousel while fullscreen media is open or reduced motion is active.",
 );
 
 assert.ok(

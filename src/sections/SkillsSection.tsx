@@ -2,9 +2,9 @@ import React, { useMemo, useRef, useEffect } from 'react';
 import { HudSection } from '../components/hud/HudSection';
 import { SectionHeader } from '../components/hud/SectionHeader';
 import { skillCategories, enhancedSkills } from '../data/skills';
-import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { CelestialSkillCore } from '../components/CelestialSkillCore';
+import { WebGLResilienceBoundary } from '../components/WebGLResilienceBoundary';
 import { useAppStore } from '../store';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -100,7 +100,8 @@ export function SkillsSection() {
           </AnimatePresence>
         </div>
 
-        <Canvas 
+        <WebGLResilienceBoundary
+          label="Celestial Skill Core"
           camera={{ position: [0, 0, 45], fov: 60 }} 
           className="w-full h-full absolute inset-0 z-0 [mask-image:radial-gradient(ellipse_at_center,rgba(0,0,0,1)_50%,rgba(0,0,0,0)_100%)] [-webkit-mask-image:radial-gradient(ellipse_at_center,rgba(0,0,0,1)_50%,rgba(0,0,0,0)_100%)]"
           dpr={SKILLS_CANVAS_DPR}
@@ -118,7 +119,7 @@ export function SkillsSection() {
             minPolarAngle={Math.PI / 4}
             maxPolarAngle={Math.PI / 1.5}
           />
-        </Canvas>
+        </WebGLResilienceBoundary>
       </div>
     </HudSection>
   );

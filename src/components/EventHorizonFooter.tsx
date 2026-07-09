@@ -36,10 +36,13 @@ export function EventHorizonFooter() {
             target="_blank"
             rel="noreferrer"
             onMouseEnter={handleHover}
-            className="text-[#4a5568] hover:text-[#D7DAE2] hover:drop-shadow-[0_0_10px_rgba(215,218,226,0.8)] transition-all duration-300 group"
+            aria-label="Escape Hatch: GitHub"
+            className="flex items-center gap-2 text-[#4a5568] hover:text-[#D7DAE2] hover:drop-shadow-[0_0_10px_rgba(215,218,226,0.8)] transition-all duration-300 group"
           >
             <Github className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
-            <span className="sr-only">GitHub</span>
+            <span className="font-mono text-[10px] tracking-[0.25em] uppercase">
+              GitHub
+            </span>
           </a>
           <a
             href={`mailto:${profile.contact.email}`}
